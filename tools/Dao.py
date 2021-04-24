@@ -30,8 +30,13 @@ class Dao:
         cursor = self.__query_db()
         res = []
         try:
-            cursor.execute('SELECT * FROM table')
+            cursor.execute('SELECT * FROM sentiment')
             res = [t[0] for t in cursor.fetchall()]
         finally:
             cursor.close()
         return res
+
+
+if __name__ == '__main__':
+    """ DAO tests. """
+    print(Dao().query_example())
