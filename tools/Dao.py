@@ -4,7 +4,7 @@ import toml
 
 class Dao:
     def __init__(self):
-        auth = toml.load("auth/auth.toml")
+        auth = toml.load("../auth/auth.toml")
         self.user = auth.get("user")
         self.pwd = auth.get("password")
         self.host = auth.get("host")
@@ -12,6 +12,7 @@ class Dao:
 
     def __query_db(self):
         db = pymysql.connect(host=self.host,
+                             port=3306,
                              user=self.user,
                              passwd=self.pwd,
                              db=self.db,
