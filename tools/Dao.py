@@ -16,7 +16,6 @@ class Dao:
                              user=self.user,
                              passwd=self.pwd,
                              db=self.db,
-                             port=3306,
                              charset='utf8',
                              cursorclass=pymysql.cursors.SSCursor)
         cur = db.cursor()
