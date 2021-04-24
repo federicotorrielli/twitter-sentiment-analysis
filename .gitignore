@@ -275,6 +275,3 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
-
-# Auth
-auth/authDB.py
