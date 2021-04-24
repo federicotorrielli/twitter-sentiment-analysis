@@ -280,7 +280,4 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# Auth
-auth/authDB.py
-
 # End of https://www.toptal.com/developers/gitignore/api/pycharm+all,python,linux,windows

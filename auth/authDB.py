@@ -1,4 +1,4 @@
-# relational
+# mysql
 USER = ''
 PASSWORD = ''
 HOST = ''
