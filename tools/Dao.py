@@ -16,7 +16,7 @@ class Dao:
                              user=self.user,
                              passwd=self.pwd,
                              db=self.db,
-                             charset='utf32',
+                             charset='utf8',
                              cursorclass=pymysql.cursors.SSCursor)
         cur = db.cursor()
         cur.execute('SET NAMES utf8mb4')
