@@ -27,7 +27,7 @@ class Dao:
     def query_example(self) -> [str]:
         """ example """
         cursor = self.__query_db()
-        res = False
+        res = []
         try:
             cursor.execute('SELECT * FROM table')
             res = [t[0] for t in cursor.fetchall()]
