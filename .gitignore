@@ -275,3 +275,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# No more fortnite
+/auth/auth.toml
