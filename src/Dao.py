@@ -1,23 +1,24 @@
-import pymysql
-import toml
+#!/usr/bin/python3
+from pymysql import cursors, connect
+from toml import load
 
 
 class Dao:
     def __init__(self):
-        auth = toml.load("../auth/auth.toml")
+        auth = load("../auth/auth.toml")
         self.user = auth.get("user")
         self.pwd = auth.get("password")
         self.host = auth.get("host")
         self.db = auth.get("db")
 
     def __query_db(self):
-        db = pymysql.connect(host=self.host,
-                             port=3306,
-                             user=self.user,
-                             passwd=self.pwd,
-                             db=self.db,
-                             charset='utf8',
-                             cursorclass=pymysql.cursors.SSCursor)
+        db = connect(host=self.host,
+                     port=3306,
+                     user=self.user,
+                     passwd=self.pwd,
+                     db=self.db,
+                     charset='utf8',
+                     cursorclass=cursors.SSCursor)
         cur = db.cursor()
         cur.execute('SET NAMES utf8mb4')
         cur.execute("SET CHARACTER SET utf8mb4")
