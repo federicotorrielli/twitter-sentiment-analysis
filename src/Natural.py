@@ -23,7 +23,7 @@ def process_dataset(file_path: str):
 
 
 def quickstart():
-    num_datasets = glob("../Resources/twitter/dataset_dt_anger_60k.txt")
+    num_datasets = glob("../Resources/tweets/dataset_dt_anger_60k.txt")
     for dataset in num_datasets:
         process_dataset(dataset)
 
