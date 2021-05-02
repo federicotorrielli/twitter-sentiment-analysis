@@ -38,12 +38,33 @@ class Dao:
                 cursor.execute("SET CHARACTER SET utf8mb4")
                 cursor.execute("SET character_set_connection=utf8mb4")
 
+                # cursor.execute("DROP TABLE IF EXISTS `emoticon`")
+                # cursor.execute("CREATE TABLE `emoticon` ("
+                #                "`id` int NOT NULL,"
+                #                "`emoticon` varchar(32) CHARACTER SET utf32 COLLATE utf32_general_ci NOT NULL, "
+                #                "`polarity` set('positive','negative','neutral','other') NOT NULL)")
+                # cursor.execute("ALTER TABLE `emoticon` ADD PRIMARY KEY (`id`)")
+                # cursor.execute("ALTER TABLE `emoticon` MODIFY `id` int NOT NULL AUTO_INCREMENT")
+
                 sql = "INSERT INTO `emoticon` (`emoticon`, polarity) VALUES (%s, %s)"
                 for emoticon in posemoticons:
                     cursor.execute(sql, (emoticon, 'positive'))
                 for emoticon in negemoticons:
                     cursor.execute(sql, (emoticon, 'negative'))
                 connection.commit()
+
+            with connection.cursor() as cursor:
+                cursor.execute('SET NAMES utf8mb4')
+                cursor.execute("SET CHARACTER SET utf8mb4")
+                cursor.execute("SET character_set_connection=utf8mb4")
+
+                # cursor.execute("DROP TABLE IF EXISTS `emoji`")
+                # cursor.execute("CREATE TABLE `emoji` ("
+                #                "`id` int NOT NULL,"
+                #                "`emoji` varchar(32) CHARACTER SET utf32 COLLATE utf32_general_ci NOT NULL, "
+                #                "`polarity` set('positive','negative','neutral','other') NOT NULL)")
+                # cursor.execute("ALTER TABLE `emoji` ADD PRIMARY KEY (`id`)")
+                # cursor.execute("ALTER TABLE `emoji` MODIFY `id` int NOT NULL AUTO_INCREMENT")
 
                 sql = "INSERT INTO `emoji` (`emoji`, polarity) VALUES (%s, %s)"
                 for emoji in EmojiPos:
