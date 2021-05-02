@@ -1,7 +1,8 @@
 import glob
 
-from FileManager import dump_toml, read_toml
 from requests import get
+
+from FileManager import dump_toml, read_toml
 
 
 def create_definitions(datasets: []):
@@ -18,7 +19,7 @@ def create_definitions(datasets: []):
 
         for word_tuple in sentiment:
             word = word_tuple[0]
-            if not word == "true" or not word == "false":
+            if not word == "true" and not word == "false":
                 definition = check_word_existence(word, standard_toml_files)
                 if definition == "":
                     definition = check_word_existence(word, slang_toml_files)
