@@ -1,11 +1,10 @@
 #!/usr/bin/python3
 from glob import glob
-from concurrent.futures import ThreadPoolExecutor
-
 from nltk import download
 from nltk.corpus import stopwords
 from nltk.tokenize import TweetTokenizer
 from collections import Counter
+from emoji import UNICODE_EMOJI_ENGLISH
 
 from FileManager import read_file
 from set_classification import twitter_stopwords, posemoticons, negemoticons
@@ -49,11 +48,17 @@ def count_hashtags(count_tuples):
     :param count_tuples:
     :return: list of Count tuples
     """
-    return [item for item in count_tuples.most_common() if item[-1] > 1 and item[0].startswith('#')]
+    return [item for item in count_tuples.most_common() if item[0].startswith('#')]
 
 
-def exclude_hastags(count_tuples):
-    return [item for item in count_tuples.most_common() if item[-1] > 1 and not item[0].startswith('#')]
+def count_emojis(count_tuples):
+    return [item for item in count_tuples.most_common() if item[0] in UNICODE_EMOJI_ENGLISH
+            or item[0] in posemoticons or item[0] in negemoticons]
+
+
+def exclude_hastags_emojis(count_tuples):
+    return [item for item in count_tuples.most_common() if not item[0].startswith('#')
+            and not item[0] in UNICODE_EMOJI_ENGLISH and not item[0] in posemoticons and not item[0] in negemoticons]
 
 
 def process_dataset(file_path: str):
@@ -72,8 +77,9 @@ def process_dataset(file_path: str):
         wordlist.append(processed_phrase)
     count_tuples = count_words(wordlist)
     most_used_hashtags = count_hashtags(count_tuples)
-    count_tuples = exclude_hastags(count_tuples)
-    return count_tuples, most_used_hashtags
+    emojis = count_emojis(count_tuples)
+    count_tuples = exclude_hastags_emojis(count_tuples)
+    return count_tuples, most_used_hashtags, emojis
 
 
 def quickstart():
@@ -86,14 +92,14 @@ def quickstart():
     surprise_dataset = glob("../Resources/tweets/dataset_dt_surprise_60k.txt")
     trust_dataset = glob("../Resources/tweets/dataset_dt_trust_60k.txt")
 
-    anger_words, anger_hashtags = process_dataset(anger_dataset[0])
-    anticipation_words, anticipation_hashtags = process_dataset(anticipation_dataset[0])
-    disgust_words, disgust_hashtags = process_dataset(disgust_dataset[0])
-    fear_words, fear_hashtags = process_dataset(fear_dataset[0])
-    joy_words, joy_hashtags = process_dataset(joy_dataset[0])
-    sadness_words, sadness_hashtags = process_dataset(sadness_dataset[0])
-    surprise_words, surprise_hashtags = process_dataset(surprise_dataset[0])
-    trust_words, trust_hashtags = process_dataset(trust_dataset[0])
+    anger_words, anger_hashtags, anger_emojis = process_dataset(anger_dataset[0])
+    anticipation_words, anticipation_hashtags, anticipation_emojis = process_dataset(anticipation_dataset[0])
+    disgust_words, disgust_hashtags, disgust_emojis = process_dataset(disgust_dataset[0])
+    fear_words, fear_hashtags, fear_emojis = process_dataset(fear_dataset[0])
+    joy_words, joy_hashtags, joy_emojis = process_dataset(joy_dataset[0])
+    sadness_words, sadness_hashtags, sadness_emojis = process_dataset(sadness_dataset[0])
+    surprise_words, surprise_hashtags, surprise_emojis = process_dataset(surprise_dataset[0])
+    trust_words, trust_hashtags, trust_emojis = process_dataset(trust_dataset[0])
 
     # Strangely, using only 1 thread is faster than using it all
     # this is probably due to using CPU-only functions instead of
