@@ -1,3 +1,4 @@
 PyMySQL~=1.0.2
 toml~=0.10.2
 nltk~=3.6.2
+emoji~=1.2.0
