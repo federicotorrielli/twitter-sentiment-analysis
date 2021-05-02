@@ -1,13 +1,15 @@
 #!/usr/bin/python3
+from collections import Counter
 from glob import glob
+
+from emoji import UNICODE_EMOJI_ENGLISH
 from nltk import download
 from nltk.corpus import stopwords
 from nltk.tokenize import TweetTokenizer
-from collections import Counter
-from emoji import UNICODE_EMOJI_ENGLISH
 
 from FileManager import read_file
-from set_classification import twitter_stopwords, posemoticons, negemoticons
+from set_classification import negemoticons, posemoticons, twitter_stopwords
+from slang import create_definitions
 
 tokenizer = TweetTokenizer()
 
@@ -100,6 +102,10 @@ def quickstart():
     sadness_words, sadness_hashtags, sadness_emojis = process_dataset(sadness_dataset[0])
     surprise_words, surprise_hashtags, surprise_emojis = process_dataset(surprise_dataset[0])
     trust_words, trust_hashtags, trust_emojis = process_dataset(trust_dataset[0])
+    word_datasets = [anger_words, anticipation_words, disgust_words, fear_words, joy_words, sadness_words,
+                     surprise_words, trust_words]
+
+    create_definitions(word_datasets)
 
     # Strangely, using only 1 thread is faster than using it all
     # this is probably due to using CPU-only functions instead of
