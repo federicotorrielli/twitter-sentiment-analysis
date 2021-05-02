@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from pymysql import cursors, connect
+from pymysql import connect, cursors
 from toml import load
 
 
