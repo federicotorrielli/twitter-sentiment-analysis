@@ -1,6 +1,7 @@
 #!/usr/bin/python3
-from pymysql import cursors, connect
+import pymysql
 from toml import load
+from set_classification import posemoticons, negemoticons, EmojiPos, EmojiNeg, OthersEmoji
 
 
 class Dao:
@@ -11,33 +12,49 @@ class Dao:
         self.host = auth.get("host")
         self.db = auth.get("db")
 
-    def __query_db(self):
-        db = connect(host=self.host,
-                     port=3306,
-                     user=self.user,
-                     passwd=self.pwd,
-                     db=self.db,
-                     charset='utf8',
-                     cursorclass=cursors.SSCursor)
-        cur = db.cursor()
-        cur.execute('SET NAMES utf8mb4')
-        cur.execute("SET CHARACTER SET utf8mb4")
-        cur.execute("SET character_set_connection=utf8mb4")
-        db.commit()
-        return cur
+    def __connect_db(self):
+        connection = pymysql.connect(host=self.host,
+                                     port=3306,
+                                     user=self.user,
+                                     passwd=self.pwd,
+                                     db=self.db,
+                                     charset='utf8',
+                                     cursorclass=pymysql.cursors.SSCursor)
+        return connection
 
-    def query_example(self) -> [str]:
-        """ example """
-        cursor = self.__query_db()
-        res = []
-        try:
-            cursor.execute('SELECT * FROM sentiment')
-            res = [t[0] for t in cursor.fetchall()]
-        finally:
-            cursor.close()
-        return res
+    def _build_db(self):
+        """
+        Build all tables of the relational db
+        """
+        self.__build_icons()
+
+    def __build_icons(self):
+        """
+        Build emoji table
+        """
+        with self.__connect_db() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute('SET NAMES utf8mb4')
+                cursor.execute("SET CHARACTER SET utf8mb4")
+                cursor.execute("SET character_set_connection=utf8mb4")
+
+                sql = "INSERT INTO `emoticon` (`emoticon`, polarity) VALUES (%s, %s)"
+                for emoticon in posemoticons:
+                    cursor.execute(sql, (emoticon, 'positive'))
+                for emoticon in negemoticons:
+                    cursor.execute(sql, (emoticon, 'negative'))
+                connection.commit()
+
+                sql = "INSERT INTO `emoji` (`emoji`, polarity) VALUES (%s, %s)"
+                for emoji in EmojiPos:
+                    cursor.execute(sql, (emoji, 'positive'))
+                for emoji in EmojiNeg:
+                    cursor.execute(sql, (emoji, 'negative'))
+                for emoji in OthersEmoji:
+                    cursor.execute(sql, (emoji, 'other'))
+                connection.commit()
 
 
 if __name__ == '__main__':
-    """ DAO tests. """
-    print(Dao().query_example())
+    """ DAO execs. """
+    Dao()._build_db()
