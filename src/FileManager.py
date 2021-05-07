@@ -1,6 +1,11 @@
+import subprocess
 from pathlib import Path
 
 import toml
+
+
+def count_file_lines(path: str) -> int:
+    return int(subprocess.check_output(f"/usr/bin/wc -l {path}", shell=True).split()[0])
 
 
 def read_file(path: str) -> str:
