@@ -1,3 +1,4 @@
+import os
 import subprocess
 from pathlib import Path
 
@@ -5,7 +6,18 @@ import toml
 
 
 def count_file_lines(path: str) -> int:
-    return int(subprocess.check_output(f"/usr/bin/wc -l {path}", shell=True).split()[0])
+    """
+    Counting lines in a file, we use two different methods
+    depending on the operating system used. If on Linux/MacOS
+    we call the fast wc for counting the file lines.
+    If on Windows (nt) we read the file and sum 1 for every line.
+    @param path:
+    @return: # of lines in a file
+    """
+    if os.name == 'nt':
+        sum(1 for _ in read_file(path))
+    else:
+        return int(subprocess.check_output(f"/usr/bin/wc -l {path}", shell=True).split()[0])
 
 
 def read_file(path: str) -> str:
