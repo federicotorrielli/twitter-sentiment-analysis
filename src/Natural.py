@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from collections import Counter
 from glob import glob
+from pprint import pprint
 
 from emoji import UNICODE_EMOJI_ENGLISH
 from nltk import download
@@ -9,7 +10,8 @@ from nltk.tokenize import TweetTokenizer
 
 from FileManager import read_file
 from set_classification import negemoticons, posemoticons, twitter_stopwords
-from slang import create_definitions
+# from slang import create_definitions
+from lexical_glob import get_lexical_filenames, get_lexical_Nlines
 
 tokenizer = TweetTokenizer()
 
@@ -84,6 +86,41 @@ def process_dataset(file_path: str):
     return count_tuples, most_used_hashtags, emojis
 
 
+def convert_to_list(dataset):
+    final = []
+    for word in dataset:
+        final.append(word[0])
+    return final
+
+
+def check_shared_words(word_datasets):
+    files = get_lexical_filenames()
+    shared_words = {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": []}
+    for index, file in enumerate(files):
+        sentiment = convert_to_list(word_datasets[index])
+        for dataset in file:
+            single = read_file(dataset)
+            for word in single.splitlines():
+                if word in sentiment:
+                    shared_words[f"{index}"].append(word)
+    return shared_words
+
+
+def calc_perc_sharedwords(shared_words, word_datasets):
+    linelist = get_lexical_Nlines()
+    returndict = {}
+    index = 0
+    for wordlist in shared_words.values():
+        N_shared_words = len(wordlist)
+        N_twitter_words = len(word_datasets[index])
+        print(f"Dataset: {index}, #Shared: {N_shared_words}, #Twitter: {N_twitter_words}, #Lex: {linelist[index]}")
+        perc_presence_lex_res = N_shared_words / linelist[index]
+        perc_presence_twitter = N_shared_words / N_twitter_words
+        returndict[f"{index}"] = (perc_presence_lex_res, perc_presence_twitter)
+        index += 1
+    return returndict
+
+
 def quickstart():
     anger_dataset = glob("../Resources/tweets/dataset_dt_anger_60k.txt")
     anticipation_dataset = glob("../Resources/tweets/dataset_dt_anticipation_60k.txt")
@@ -104,24 +141,10 @@ def quickstart():
     trust_words, trust_hashtags, trust_emojis = process_dataset(trust_dataset[0])
     word_datasets = [anger_words, anticipation_words, disgust_words, fear_words, joy_words, sadness_words,
                      surprise_words, trust_words]
-
-    create_definitions(word_datasets)
-
-    # Strangely, using only 1 thread is faster than using it all
-    # this is probably due to using CPU-only functions instead of
-    # really relying on I/O operations, but, still strange to my eyes
-
-    """
-    all_dataset = glob("../Resources/tweets/*.txt")
-
-    with ThreadPoolExecutor() as executor:
-        resulting_table = []
-        workerlist = []
-        for dataset in all_dataset:
-            workerlist.append(executor.submit(process_dataset, dataset))
-        for worker in concurrent.futures.as_completed(workerlist):
-            print(worker.result())
-    """
+    shared_words = check_shared_words(word_datasets)
+    perc_calc = calc_perc_sharedwords(shared_words, word_datasets)
+    pprint(perc_calc)
+    # create_definitions(word_datasets)
 
 
 if __name__ == '__main__':
