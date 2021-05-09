@@ -79,7 +79,7 @@ def get_sentiment_emoticons():
             'negative': [emoticon for emoticon in negemoticons]}
 
 
-def get_sentiment_emoji():
+def get_sentiment_emojis():
     """
     Returns positive and negative emoji
     @return: a dict with positive/negative/other/neutral as keys and list of emoji as values

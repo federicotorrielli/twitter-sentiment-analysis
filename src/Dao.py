@@ -3,7 +3,6 @@ import warnings
 
 import pymysql
 from toml import load
-from src.Natural import process_phrase, create_stopword_list
 from src.lexical_glob import get_sentiment_words, get_sentiment_emojis, get_sentiment_emoticons
 
 
@@ -264,4 +263,4 @@ class Dao:
 
 if __name__ == '__main__':
     """ DAO execs. """
-    # Dao().build_db()
+    Dao().build_db()
