@@ -1,10 +1,13 @@
 from glob import glob
 from pprint import pprint
-
 from FileManager import count_file_lines
 
 
 def get_lexical_filenames():
+    """
+    Foreach Plutchik emotion, it returns the lexical filenames.
+    @return: lexical filenames
+    """
     return [glob("../Resources/lexical/Anger/*.txt"), glob("../Resources/lexical/Anticipation/*.txt"),
             glob("../Resources/lexical/Disgust-Hate/*.txt"), glob("../Resources/lexical/Fear/*.txt"),
             glob("../Resources/lexical/Joy/*.txt"), glob("../Resources/lexical/Sadness/*.txt"),
@@ -12,6 +15,10 @@ def get_lexical_filenames():
 
 
 def get_lexical_Nlines():
+    """
+    Foreach Plutchik emotion, it finds # words.
+    @return: list of # sentiment words
+    """
     sumlist = []
     for index, files in enumerate(get_lexical_filenames()):
         sumlist.append(0)
