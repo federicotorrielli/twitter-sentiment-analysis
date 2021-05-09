@@ -82,7 +82,6 @@ def count_emojis(count_tuples):
     @param count_tuples:
     @return: list of Count tuples
     """
-    # TODO OthersEmoji needed
     return [item for item in count_tuples.most_common() if item[0] in UNICODE_EMOJI_ENGLISH
             or item[0] in posemoticons or item[0] in negemoticons]
 
