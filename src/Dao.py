@@ -40,9 +40,9 @@ class Dao:
         print("Adding words")
         self.__insert_words(get_sentiment_words())
         print("Adding emoticons")
-        self.__insert_emoticons(get_sentiment_emojis())
+        self.__insert_emoticons(get_sentiment_emoticons())
         print("Adding emojis")
-        self.__insert_emojis(get_sentiment_emoticons())
+        self.__insert_emojis(get_sentiment_emojis())
 
         # insert tweets
         # self.__insert_tweets(get_sentiment_tweets())
