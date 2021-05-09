@@ -10,7 +10,7 @@ def count_file_lines(path: str) -> int:
     depending on the operating system used. If on Linux/MacOS
     we call the fast wc for counting the file lines.
     If on Windows (nt) we read the file and sum 1 for every line.
-    @param path:
+    @param path: path to the file
     @return: # of lines in a file
     """
     if os.name == 'nt':
@@ -22,8 +22,8 @@ def count_file_lines(path: str) -> int:
 def read_file(path: str) -> str:
     """
     Returns the file content using utf-8 encoding.
-    @param path:str
-    @return: the file content
+    @param path: path to the file
+    @return: file content
     """
     with open(path, 'r', encoding="utf-8") as file:
         return file.read()
@@ -32,7 +32,8 @@ def read_file(path: str) -> str:
 def write_file(path: str, data: [str]):
     """
     Writes a file using utf-8 encoding.
-    @params path:str data:[str]
+    @param path: path to the file
+    @param data: list of rows
     """
     with open(path, 'w', encoding="utf-8") as file:
         file.writelines(data)
@@ -41,7 +42,8 @@ def write_file(path: str, data: [str]):
 def append_file(path: str, data: [str]):
     """
     Appends data to the file using utf-8 encoding.
-    @params path:str data:[str]
+    @param path: path to the file
+    @param data: list of rows
     """
     with open(path, 'a', encoding="utf-8") as file:
         file.write(data)
@@ -50,7 +52,8 @@ def append_file(path: str, data: [str]):
 def dump_toml(path: str, data):
     """
     Writes out data to toml file using utf-8 encoding.
-    @params path:str data:
+    @param path: path to the toml file
+    @param data: list of rows
     """
     with open(path, 'w', encoding="utf-8") as file:
         file.truncate(0)
@@ -60,8 +63,8 @@ def dump_toml(path: str, data):
 def read_toml(path: str):
     """
     Returns the toml file content using utf-8 encoding.
-    @param path:str
-    @return: the toml file content
+    @param path: path to the toml file
+    @return: toml file content
     """
     with open(path, 'r', encoding="utf-8") as file:
         return toml.load(file)
@@ -70,5 +73,6 @@ def read_toml(path: str):
 def get_project_root():
     """
     Returns project root folder.
+    @return: project root path
     """
     return Path(__file__).parent.parent
