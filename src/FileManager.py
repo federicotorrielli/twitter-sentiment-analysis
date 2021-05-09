@@ -14,7 +14,7 @@ def count_file_lines(path: str) -> int:
     @return: # of lines in a file
     """
     if os.name == 'nt':
-        sum(1 for _ in read_file(path))
+        return sum(1 for _ in read_file(path))
     else:
         return int(subprocess.check_output(f"/usr/bin/wc -l {path}", shell=True).split()[0])
 
