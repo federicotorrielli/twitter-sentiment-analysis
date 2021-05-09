@@ -51,7 +51,8 @@ def get_sentiment_tweets():
 
 def get_sentiment_words():
     """
-    # TODO
+    Returns words and their sentiments
+    @return: a dict with words as keys and list of word sentiments' ids as values
     """
     words_list = []
     for files in get_lexical_filenames():
@@ -69,17 +70,19 @@ def get_sentiment_words():
     return word_sentiments
 
 
-def get_sentiment_emojis():
+def get_sentiment_emoticons():
     """
-    # TODO
+    Returns positive and negative emoticons
+    @return: a dict with positive/negative as keys and list of emoticons as values
     """
     return {'positive': [emoticon for emoticon in posemoticons],
             'negative': [emoticon for emoticon in negemoticons]}
 
 
-def get_sentiment_emoticons():
+def get_sentiment_emoji():
     """
-    # TODO
+    Returns positive and negative emoji
+    @return: a dict with positive/negative/other/neutral as keys and list of emoji as values
     """
     return {'positive': [emoji for emoji in EmojiPos],
             'negative': [emoji for emoji in EmojiNeg],
