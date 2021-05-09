@@ -17,6 +17,11 @@ tokenizer = TweetTokenizer()
 
 
 def clean_emoticons(phrase: str):
+    """
+    Given a phrase, it remove every emoticon in it.
+    @param phrase: sentence to clear from emoticons
+    @return: the phrase free of emoticons and the list of emoticon
+    """
     emoticon_list = [emoticon for emoticon in (posemoticons + negemoticons) if emoticon in phrase]
     for emote in emoticon_list:
         phrase = phrase.replace(emote, '')
@@ -24,6 +29,12 @@ def clean_emoticons(phrase: str):
 
 
 def process_phrase(phrase: str, stopword_list: set):
+    """
+    Given a phrase and the stopwords list, it tokenizes the phrase removing the stopwords.
+    @param phrase: sentence to be tokenized
+    @param  stopword_list:
+    @return: the tokenized phrase
+    """
     clean_phrase, emote_list = clean_emoticons(phrase)
     tokenized = tokenizer.tokenize(clean_phrase)
     final_phrase = [word for word in tokenized if word not in stopword_list and "_" not in word] + emote_list
@@ -31,6 +42,10 @@ def process_phrase(phrase: str, stopword_list: set):
 
 
 def create_stopword_list() -> set:
+    """
+    Builds the stopword list.
+    @return: the stopword list
+    """
     default = stopwords.words('english')
     personal = twitter_stopwords
     final = default + personal
@@ -38,9 +53,14 @@ def create_stopword_list() -> set:
 
 
 def count_words(wordlist):
+    """
+    Counts the words in the tokenized phrases list.
+    @param wordlist: list of tokenized phrases
+    @return: words Counter, the # of times the words occur
+    """
     final_list = []
-    for tokenzied_phrase in wordlist:
-        for word in tokenzied_phrase:
+    for tokenized_phrase in wordlist:
+        for word in tokenized_phrase:
             final_list.append(word)
     return Counter(x for x in final_list)
 
@@ -49,18 +69,31 @@ def count_hashtags(count_tuples):
     """
     Returns a list of tuples ('#hashtagword', count) ordered from the most used
     to the least. Items that have only one usage are discarded.
-    :param count_tuples:
-    :return: list of Count tuples
+    @param count_tuples:
+    @return: list of Count tuples
     """
     return [item for item in count_tuples.most_common() if item[0].startswith('#')]
 
 
 def count_emojis(count_tuples):
+    """
+    Returns a list of tuples ('emoji', count) ordered from the most used
+    to the least. Items that have only one usage are discarded.
+    @param count_tuples:
+    @return: list of Count tuples
+    """
+    # TODO OthersEmoji needed
     return [item for item in count_tuples.most_common() if item[0] in UNICODE_EMOJI_ENGLISH
             or item[0] in posemoticons or item[0] in negemoticons]
 
 
 def exclude_hastags_emojis(count_tuples):
+    """
+    Returns a list of tuples ('token', count) free of hashtags and emojis and
+    ordered from the most used to the least. Items that have only one usage are discarded.
+    @param count_tuples:
+    @return: list of Count tuples
+    """
     return [item for item in count_tuples.most_common() if not item[0].startswith('#')
             and not item[0] in UNICODE_EMOJI_ENGLISH and not item[0] in posemoticons and not item[0] in negemoticons]
 
@@ -70,8 +103,10 @@ def process_dataset(file_path: str):
     Given a datasets, it processes all its phrases line-by-line and
     extracts the wordlist and the hashtag list tuple made like
     ('word or hashtag', count) and returns the two different lists
-    :param file_path:
-    :return:
+    @param file_path:
+    @return: list of Count tuples without hashtags and emojis,
+    list of Count tuples of most used hashtags,
+    list of Count tuples of emojis
     """
     wordlist = []
     file = read_file(file_path)
@@ -87,6 +122,11 @@ def process_dataset(file_path: str):
 
 
 def convert_to_list(dataset):
+    """
+    Converts the dataset to a list.
+    @param dataset: dataset to be converted in a list
+    @return: dataset list
+    """
     final = []
     for word in dataset:
         final.append(word[0])
@@ -94,6 +134,13 @@ def convert_to_list(dataset):
 
 
 def check_shared_words(word_datasets):
+    """
+    Given a datasets of phrases, it finds the words labelled as a Plutchik emotion
+    @param word_datasets: datasets of phrases
+    @return: a dict of a list af words foreach Plutchik emotion
+    """
+    # TODO needs explanation:
+    #  why does it add to the dict only the words of the main phrase sentiment?
     files = get_lexical_filenames()
     shared_words = {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": []}
     for index, file in enumerate(files):
@@ -107,6 +154,14 @@ def check_shared_words(word_datasets):
 
 
 def calc_perc_sharedwords(shared_words, word_datasets):
+    """
+    Return a dict of tuples (, ) # TODO
+    @param shared_words:
+    @param word_datasets:
+    @return:
+    """
+    # TODO con che percentuale le parole si propongono in N frasi oppure in M parole?
+    #  Non conta le percentuale di presenza di una parola nel dataset ma nel dizionario
     linelist = get_lexical_Nlines()
     returndict = {}
     index = 0
@@ -122,6 +177,9 @@ def calc_perc_sharedwords(shared_words, word_datasets):
 
 
 def quickstart():
+    """
+    Quick start of the dataset sentiment analysis.
+    """
     anger_dataset = glob("../Resources/tweets/dataset_dt_anger_60k.txt")
     anticipation_dataset = glob("../Resources/tweets/dataset_dt_anticipation_60k.txt")
     disgust_dataset = glob("../Resources/tweets/dataset_dt_disgust_60k.txt")
