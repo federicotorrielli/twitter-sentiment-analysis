@@ -1,5 +1,6 @@
 import glob
 from requests import get
+
 from FileManager import dump_toml, read_toml
 
 
@@ -7,7 +8,7 @@ def create_definitions(datasets: []):
     """
     Foreach Plutchik emotion, it finds words definition from datasets and
     it writes them to toml files.
-    @param datasets:[]
+    @param datasets:
     """
     i = 0
     names = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
@@ -53,7 +54,7 @@ def create_definitions(datasets: []):
 def get_slang_definition(word):
     """
     Returns the English slang word meaning from Urban Dictionary API.
-    @param word
+    @param word: the word to search for the definition of
     @return: the word definition
     """
     response = get(f"https://api.urbandictionary.com/v0/define?term={word}")
@@ -69,7 +70,7 @@ def get_slang_definition(word):
 def get_dictionary_definition(word):
     """
     Returns the English word meaning from Free Dictionary API.
-    @param word
+    @param word: the word to search for the definition of
     @return: the word definition
     """
     response = get(f"https://api.dictionaryapi.dev/api/v2/entries/en_US/{word}")
@@ -112,7 +113,8 @@ def preparse_slang_toml_files():
 def check_word_existence(word, parsedfiles):
     """
     Given a word and the parsed files, it returns the word definition if exists.
-    @params word: parsedfiles:
+    @param word: the word to search for the definition of
+    @param parsedfiles:
     @return: the word definition if exists
     """
     for parsed in parsedfiles:
