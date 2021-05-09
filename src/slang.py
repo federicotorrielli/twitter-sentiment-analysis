@@ -5,7 +5,7 @@ from FileManager import dump_toml, read_toml
 
 def create_definitions(datasets: []):
     """
-    Foreach eight Plutchik emotions, it finds words definition from datasets and
+    Foreach Plutchik emotion, it finds words definition from datasets and
     it writes them to toml files.
     @param datasets:[]
     """
