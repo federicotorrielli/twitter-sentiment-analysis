@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+import warnings
+
 import pymysql
 from toml import load
 from src.Natural import process_phrase, create_stopword_list
@@ -219,17 +221,47 @@ class Dao:
                         cursor.execute(sql, (emoji, index))
                 connection.commit()
 
-    # TODO
     def __insert_tweets(self, tweets_content: [str]):
         """
         Builds twitter_message table
         @param tweets_content: list of tweets' content
         """
+        # TODO
 
-    # TODO add __single_query(statement:str)
-    # TODO add __single_exec(statement:str)
+    def __single_exec(self, statement: str, params: [str]):
+        """
+        Given a MySQL statement and the parameters eventually needed, it execs the statement
+        @param statement: MySQL statement
+        @param params: parameters eventually needed inside the statement
+        """
+        with self.__connect_db() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute('SET NAMES utf8mb4')
+                cursor.execute("SET CHARACTER SET utf8mb4")
+                cursor.execute("SET character_set_connection=utf8mb4")
+                cursor.execute(statement, params)
+                connection.commit()
+
+    def __single_query(self, statement: str, params: [] = None) -> [()]:
+        """
+        Given a MySQL statement and the parameters eventually needed, it execs the statement
+        @param statement: MySQL statement
+        @param params: list of parameters eventually needed inside the statement
+        @return: list of records
+        """
+        if params is None:
+            params = []
+        with self.__connect_db() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute('SET NAMES utf8mb4')
+                cursor.execute("SET CHARACTER SET utf8mb4")
+                cursor.execute("SET character_set_connection=utf8mb4")
+                cursor.execute(statement, params)
+                cursor.execute(statement, params)
+                res = cursor.fetchall()
+                return res
 
 
 if __name__ == '__main__':
     """ DAO execs. """
-    Dao().build_db()
+    # Dao().build_db()
