@@ -22,7 +22,7 @@ def clean_emoticons(phrase: str):
     @param phrase: sentence to clear from emoticons
     @return: the phrase free of emoticons and the list of emoticon
     """
-    emoticon_list = [emoticon for emoticon in (posemoticons + negemoticons) if emoticon in phrase]
+    emoticon_list = [emoticon for emoticon in set(posemoticons + negemoticons) if emoticon in phrase]
     for emote in emoticon_list:
         phrase = phrase.replace(emote, '')
     return phrase, emoticon_list
@@ -43,8 +43,8 @@ def process_phrase(phrase: str, stopword_list: set):
 
 def create_stopword_list() -> set:
     """
-    Builds the stopword list.
-    @return: the stopword list
+    Builds the stopword set.
+    @return: the stopword set
     """
     default = stopwords.words('english')
     personal = twitter_stopwords
@@ -121,16 +121,13 @@ def process_dataset(file_path: str):
     return count_tuples, most_used_hashtags, emojis
 
 
-def convert_to_list(dataset):
+def convert_to_set(dataset):
     """
-    Converts the dataset to a list.
-    @param dataset: dataset to be converted in a list
-    @return: dataset list
+    Converts the dataset to a set.
+    @param dataset: a Count list
+    @return: a dataset set from the list
     """
-    final = []
-    for word in dataset:
-        final.append(word[0])
-    return final
+    return set([word[0] for word in dataset])
 
 
 def check_shared_words(word_datasets):
@@ -144,11 +141,11 @@ def check_shared_words(word_datasets):
     files = get_lexical_filenames()
     shared_words = {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": []}
     for index, file in enumerate(files):
-        sentiment = convert_to_list(word_datasets[index])
+        twitter_words = convert_to_set(word_datasets[index])
         for dataset in file:
             single = read_file(dataset)
             for word in single.splitlines():
-                if word in sentiment:
+                if word in twitter_words:
                     shared_words[f"{index}"].append(word)
     return shared_words
 
