@@ -169,7 +169,7 @@ class DaoMySQLDB:
         Builds word table
         @param word_sentiments: set with words as keys and list of sentiments ids as values
         """
-        # TODO: filed 'slang' = 1 when needed
+        # TODO: field 'slang' = 1 when needed
         # TODO: add words meaning
         with self.__connect_db() as connection:
             with connection.cursor() as cursor:
