@@ -133,10 +133,8 @@ def check_shared_words(word_datasets):
     """
     Given a datasets of phrases, it finds the words labelled as a Plutchik emotion
     @param word_datasets: datasets of phrases
-    @return: a dict of a list af words foreach Plutchik emotion
+    @return: dict of list af words foreach Plutchik emotion
     """
-    # TODO needs explanation:
-    #  why does it add to the dict only the words of the main phrase sentiment?
     files = get_lexical_filenames()
     shared_words = {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": []}
     for index, file in enumerate(files):
@@ -151,13 +149,11 @@ def check_shared_words(word_datasets):
 
 def calc_perc_sharedwords(shared_words, word_datasets):
     """
-    Return a dict of tuples (, ) # TODO
-    @param shared_words:
-    @param word_datasets:
-    @return:
+    Return a set of tuples (perc_presence_lex_res, perc_presence_twitter)
+    @param shared_words: dict of list af words foreach Plutchik emotion
+    @param word_datasets: datasets of phrases
+    @return: set of tuples (perc_presence_lex_res, perc_presence_twitter)
     """
-    # TODO con che percentuale le parole si propongono in N frasi oppure in M parole?
-    #  Non conta le percentuale di presenza di una parola nel dataset ma nel dizionario
     linelist = get_lexical_Nlines()
     returndict = {}
     index = 0
