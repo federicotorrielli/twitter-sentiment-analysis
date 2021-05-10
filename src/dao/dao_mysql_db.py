@@ -7,6 +7,20 @@ from src.datasets_manager import get_sentiment_words, get_sentiment_emojis, get_
 from src.file_manager import get_project_root
 
 
+def _execute_statement(cursor, statement: str, params: [] = None):
+    try:
+        if params is None:
+            cursor.execute(statement)
+        else:
+            cursor.execute(statement, params)
+    except MySQLError as error:
+        print(f"Error: {error}", file=sys.stderr)
+    finally:
+        print(f"\tstatement: {cursor._last_executed}")
+
+    return cursor
+
+
 class DaoMySQLDB:
     def __init__(self):
         """ Relational DB """
@@ -30,23 +44,23 @@ class DaoMySQLDB:
                                      cursorclass=pymysql.cursors.SSCursor)
         return connection
 
-    def build_db(self):
+    def build_db(self, sentiments, words, emoticons, emojis, tweets):
         """
         Builds all tables of the relational db
         """
         print("Building DB")
         self.__drop_and_create_tables()
         print("Adding sentiments")
-        self.__insert_sentiments()
+        self.__insert_sentiments(sentiments)
         print("Adding words")
-        self.__insert_words(get_sentiment_words())
+        self.__insert_words(words)
         print("Adding emoticons")
-        self.__insert_emoticons(get_sentiment_emoticons())
+        self.__insert_emoticons(emoticons)
         print("Adding emojis")
-        self.__insert_emojis(get_sentiment_emojis())
+        self.__insert_emojis(emojis)
 
-        # insert tweets
-        # self.__insert_tweets(get_sentiment_tweets())
+        # print("Adding tweets")
+        # self.__insert_tweets(tweets)
 
     def __drop_and_create_tables(self):
         """
@@ -54,85 +68,88 @@ class DaoMySQLDB:
         """
         with self.__connect_db() as connection:
             with connection.cursor() as cursor:
-                cursor.execute("DROP TABLE IF EXISTS `labelled`")
-                cursor.execute("DROP TABLE IF EXISTS `belongs_to`")
-                cursor.execute("DROP TABLE IF EXISTS `in_tweet`")
+                _execute_statement(cursor, "DROP TABLE IF EXISTS `labelled`")
+                _execute_statement(cursor, "DROP TABLE IF EXISTS `belongs_to`")
+                _execute_statement(cursor, "DROP TABLE IF EXISTS `in_tweet`")
 
-                cursor.execute("DROP TABLE IF EXISTS `sentiment`")
-                cursor.execute("CREATE TABLE `sentiment` (`id` int NOT NULL,`type` varchar(32) NOT NULL)")
-                cursor.execute("ALTER TABLE `sentiment` ADD PRIMARY KEY (`id`)")
-                cursor.execute("ALTER TABLE `sentiment` MODIFY `id` int NOT NULL AUTO_INCREMENT")
+                _execute_statement(cursor, "DROP TABLE IF EXISTS `sentiment`")
+                _execute_statement(cursor, "CREATE TABLE `sentiment` ("
+                                           "`id` int NOT NULL AUTO_INCREMENT,"
+                                           "`type` varchar(32) NOT NULL UNIQUE,"
+                                           "PRIMARY KEY (`id`))")
                 connection.commit()
 
-                cursor.execute("DROP TABLE IF EXISTS `twitter_message`")
-                cursor.execute("CREATE TABLE `twitter_message` ("
-                               "`id` int NOT NULL,`tweet_content` varchar(280) NOT NULL)")
-                cursor.execute("ALTER TABLE `twitter_message` ADD PRIMARY KEY (`id`)")
-                cursor.execute("ALTER TABLE `twitter_message` MODIFY `id` int NOT NULL AUTO_INCREMENT")
+                _execute_statement(cursor, "DROP TABLE IF EXISTS `twitter_message`")
+                _execute_statement(cursor, "CREATE TABLE `twitter_message` ("
+                                           "`id` int NOT NULL AUTO_INCREMENT,"
+                                           "`tweet_content` varchar(280) NOT NULL,"
+                                           "PRIMARY KEY (`id`))")
                 connection.commit()
 
-                cursor.execute("DROP TABLE IF EXISTS `word`")
-                cursor.execute("CREATE TABLE `word` (`id` int NOT NULL,`word` varchar(64) NOT NULL)")
-                cursor.execute("ALTER TABLE `word` ADD PRIMARY KEY (`id`)")
-                cursor.execute("ALTER TABLE `word` MODIFY `id` int NOT NULL AUTO_INCREMENT")
+                _execute_statement(cursor, "DROP TABLE IF EXISTS `word`")
+                _execute_statement(cursor, "CREATE TABLE `word` ("
+                                           "`id` int NOT NULL AUTO_INCREMENT,"
+                                           "`word` varchar(140) NOT NULL UNIQUE,"
+                                           "`slang` BOOLEAN NOT NULL DEFAULT FALSE,"
+                                           "`meaning` varchar(512) "
+                                           "CHARACTER SET utf32 COLLATE utf32_general_ci NOT NULL,"
+                                           "`count` int NOT NULL,"
+                                           "PRIMARY KEY (`id`))")
                 connection.commit()
 
-                cursor.execute("DROP TABLE IF EXISTS `emoticon`")
-                cursor.execute("CREATE TABLE `emoticon` ("
-                               "`id` int NOT NULL,"
-                               "`emoticon` varchar(32) CHARACTER SET utf32 COLLATE utf32_general_ci NOT NULL, "
-                               "`polarity` set('positive','negative','neutral','other') NOT NULL)")
-                cursor.execute("ALTER TABLE `emoticon` ADD PRIMARY KEY (`id`)")
-                cursor.execute("ALTER TABLE `emoticon` MODIFY `id` int NOT NULL AUTO_INCREMENT")
+                _execute_statement(cursor, "DROP TABLE IF EXISTS `emoticon`")
+                _execute_statement(cursor, "CREATE TABLE `emoticon` ("
+                                           "`id` int NOT NULL AUTO_INCREMENT,"
+                                           "`emoticon` varchar(140) "
+                                           "CHARACTER SET utf32 COLLATE utf32_general_ci NOT NULL,"
+                                           "`polarity` set('positive','negative','neutral','other') NOT NULL,"
+                                           "`count` int NOT NULL,"
+                                           "PRIMARY KEY (`id`))")
                 connection.commit()
 
-                cursor.execute("DROP TABLE IF EXISTS `emoji`")
-                cursor.execute("CREATE TABLE `emoji` ("
-                               "`id` int NOT NULL,"
-                               "`emoji` varchar(32) CHARACTER SET utf32 COLLATE utf32_general_ci NOT NULL, "
-                               "`polarity` set('positive','negative','neutral','other') NOT NULL)")
-                cursor.execute("ALTER TABLE `emoji` ADD PRIMARY KEY (`id`)")
-                cursor.execute("ALTER TABLE `emoji` MODIFY `id` int NOT NULL AUTO_INCREMENT")
+                _execute_statement(cursor, "DROP TABLE IF EXISTS `emoji`")
+                _execute_statement(cursor, "CREATE TABLE `emoji` ("
+                                           "`id` int NOT NULL AUTO_INCREMENT,"
+                                           "`emoji` varchar(140) "
+                                           "CHARACTER SET utf32 COLLATE utf32_general_ci NOT NULL,"
+                                           "`polarity` set('positive','negative','neutral','other') NOT NULL,"
+                                           "`meaning` varchar(512) "
+                                           "CHARACTER SET utf32 COLLATE utf32_general_ci NOT NULL,"
+                                           "`count` int NOT NULL,"
+                                           "PRIMARY KEY (`id`))")
                 connection.commit()
 
-                cursor.execute("CREATE TABLE `labelled` ("
-                               "`sentiment_id` int NOT NULL, "
-                               "`tweet_id` int NOT NULL)")
-                cursor.execute("ALTER TABLE `labelled`"
-                               "ADD PRIMARY KEY (`sentiment_id`,`tweet_id`), "
-                               "ADD KEY `tweet_id` (`tweet_id`);")
-                cursor.execute("ALTER TABLE `labelled` "
-                               "ADD CONSTRAINT `labelled_sentiment_fk` "
-                               "FOREIGN KEY (`sentiment_id`) REFERENCES `sentiment` (`id`), "
-                               "ADD CONSTRAINT `tweet_labelled_fk` "
-                               "FOREIGN KEY (`tweet_id`) REFERENCES `twitter_message` (`id`);")
+                _execute_statement(cursor, "CREATE TABLE `labelled` ("
+                                           "`sentiment_id` int NOT NULL,"
+                                           "`tweet_id` int NOT NULL,"
+                                           "PRIMARY KEY(`sentiment_id`,`tweet_id`),"
+                                           "FOREIGN KEY (`sentiment_id`) REFERENCES `sentiment` (`id`) "
+                                           "ON DELETE CASCADE ON UPDATE CASCADE,"
+                                           "FOREIGN KEY (`tweet_id`) REFERENCES `twitter_message` (`id`) "
+                                           "ON DELETE CASCADE ON UPDATE CASCADE)")
                 connection.commit()
 
-                cursor.execute("CREATE TABLE `belongs_to` ("
-                               "`sentiment_id` int NOT NULL,"
-                               "`word_id` int NOT NULL)")
-                cursor.execute("ALTER TABLE `belongs_to` "
-                               "ADD KEY `word_id` (`word_id`), "
-                               "ADD KEY `sentiment_id` (`sentiment_id`);")
-                cursor.execute("ALTER TABLE `belongs_to` "
-                               "ADD CONSTRAINT `word_belongs_to_fk` "
-                               "FOREIGN KEY (`word_id`) REFERENCES `word` (`id`), "
-                               "ADD CONSTRAINT `belongs_to_sentiment_fk` "
-                               "FOREIGN KEY (`sentiment_id`) REFERENCES `sentiment` (`id`);")
+                _execute_statement(cursor, "CREATE TABLE `belongs_to` ("
+                                           "`sentiment_id` int NOT NULL,"
+                                           "`word_id` int NOT NULL,"
+                                           "`perc` float NOT NULL,"
+                                           "PRIMARY KEY(`sentiment_id`,`word_id`),"
+                                           "FOREIGN KEY (`word_id`) REFERENCES `word` (`id`) "
+                                           "ON DELETE CASCADE ON UPDATE CASCADE,"
+                                           "FOREIGN KEY (`sentiment_id`) REFERENCES `sentiment` (`id`) "
+                                           "ON DELETE CASCADE ON UPDATE CASCADE)")
                 connection.commit()
 
-                cursor.execute("CREATE TABLE `in_tweet` ("
-                               "`tweet_id` int NOT NULL, "
-                               "`token_id` int NOT NULL,"
-                               "`type` SET('WORD','EMOJI','EMOTICON') NOT NULL)")
-                cursor.execute("ALTER TABLE `in_tweet` "
-                               "ADD PRIMARY KEY (`tweet_id`,`token_id`);")
-                cursor.execute("ALTER TABLE `in_tweet` "
-                               "ADD CONSTRAINT `in_tweet_fk` "
-                               "FOREIGN KEY (`tweet_id`) REFERENCES `twitter_message` (`id`);")
+                _execute_statement(cursor, "CREATE TABLE `in_tweet` ("
+                                           "`tweet_id` int NOT NULL, "
+                                           "`token_id` int NOT NULL,"
+                                           "`type` SET('WORD','EMOJI','EMOTICON') NOT NULL,"
+                                           "PRIMARY KEY(`tweet_id`,`token_id`),"
+                                           "FOREIGN KEY (`tweet_id`) REFERENCES `twitter_message` (`id`) "
+                                           "ON DELETE CASCADE ON UPDATE CASCADE)")
                 connection.commit()
 
-    def __insert_sentiments(self):
+    def __insert_sentiments(self, sentiments: [str]):
         """
         Builds sentiment table
         """
@@ -142,10 +159,9 @@ class DaoMySQLDB:
                 cursor.execute("SET CHARACTER SET utf8mb4")
                 cursor.execute("SET character_set_connection=utf8mb4")
 
-                sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
                 sql = "INSERT INTO `sentiment` (`type`) VALUES (%s)"
                 for s in sentiments:
-                    cursor.execute(sql, s)
+                    _execute_statement(cursor, sql, s)
                 connection.commit()
 
     def __insert_words(self, word_sentiments: {}):
@@ -153,6 +169,8 @@ class DaoMySQLDB:
         Builds word table
         @param word_sentiments: set with words as keys and list of sentiments ids as values
         """
+        # TODO: filed 'slang' = 1 when needed
+        # TODO: add words meaning
         with self.__connect_db() as connection:
             with connection.cursor() as cursor:
                 cursor.execute('SET NAMES utf8mb4')
@@ -183,9 +201,9 @@ class DaoMySQLDB:
                         sql_belongs_to_params += [word_sentiments[word][index] + 1, id_word]
                         first_insertion = False
 
-                cursor.execute(sql_word, sql_word_params)
+                _execute_statement(cursor, sql_word, sql_word_params)
                 connection.commit()
-                cursor.execute(sql_belongs_to, sql_belongs_to_params)
+                _execute_statement(cursor, sql_belongs_to, sql_belongs_to_params)
                 connection.commit()
 
                 print(f"{len(word_sentiments)} words added")
@@ -196,6 +214,7 @@ class DaoMySQLDB:
         Builds emoticon table
         @param polarity_emoticons: set with polarity as keys and list of emoticons as values
         """
+        # TODO: add emoji meaning
         with self.__connect_db() as connection:
             with connection.cursor() as cursor:
                 cursor.execute('SET NAMES utf8mb4')
@@ -205,7 +224,9 @@ class DaoMySQLDB:
                 sql = "INSERT INTO `emoticon` (`emoticon`, polarity) VALUES (%s, %s)"
                 for index in polarity_emoticons:
                     for emoticon in polarity_emoticons[index]:
-                        cursor.execute(sql, (emoticon, index))
+                        if emoticon == 'X-D':
+                            print("")
+                        _execute_statement(cursor, sql, [emoticon, index])
                 connection.commit()
 
     def __insert_emojis(self, polarity_emojis: {}):
@@ -222,7 +243,7 @@ class DaoMySQLDB:
                 sql = "INSERT INTO `emoji` (`emoji`, polarity) VALUES (%s, %s)"
                 for index in polarity_emojis:
                     for emoji in polarity_emojis[index]:
-                        cursor.execute(sql, (emoji, index))
+                        _execute_statement(cursor, sql, [emoji, index])
                 connection.commit()
 
     def __insert_tweets(self, tweets_content: [str]):
@@ -232,39 +253,18 @@ class DaoMySQLDB:
         """
         # TODO
 
-    def _single_exec(self, statement: str, params: [str]):
+    def _easy_statement_exec(self, statement: str, params: [str]):
         """
         Given a MySQL statement and the parameters eventually needed, it execs the statement
         @param statement: MySQL statement
         @param params: parameters eventually needed inside the statement
+        @return: cursor
         """
         with self.__connect_db() as connection:
             with connection.cursor() as cursor:
                 cursor.execute('SET NAMES utf8mb4')
                 cursor.execute("SET CHARACTER SET utf8mb4")
                 cursor.execute("SET character_set_connection=utf8mb4")
-                cursor.execute(statement, params)
+                cursor = _execute_statement(cursor, statement, params)
                 connection.commit()
-
-    def _single_query(self, statement: str, params: [] = None) -> [()]:
-        """
-        Given a MySQL statement and the parameters eventually needed, it execs the statement
-        @param statement: MySQL statement
-        @param params: list of parameters eventually needed inside the statement
-        @return: list of records
-        """
-        if params is None:
-            params = []
-        with self.__connect_db() as connection:
-            with connection.cursor() as cursor:
-                cursor.execute('SET NAMES utf8mb4')
-                cursor.execute("SET CHARACTER SET utf8mb4")
-                cursor.execute("SET character_set_connection=utf8mb4")
-                cursor.execute(statement, params)
-                try:
-                    cursor.execute(statement, params)
-                    res = cursor.fetchall()
-                except MySQLError as error:
-                    print(f"Error: {error}", file=sys.stderr)
-
-                return res
+        return cursor
