@@ -1,14 +1,14 @@
 #!/usr/bin/python3
 import sys
-
 import pymysql
 from pymysql import MySQLError
 from toml import load
 from src.datasets_manager import get_sentiment_words, get_sentiment_emojis, get_sentiment_emoticons
 
 
-class Dao:
+class DaoMySQLDB:
     def __init__(self):
+        """ Relational DB """
         auth = load("../auth/auth.toml")
         self.user = auth.get("user")
         self.pwd = auth.get("password")
@@ -265,8 +265,3 @@ class Dao:
                     print(f"Error: {error}", file=sys.stderr)
 
                 return res
-
-
-if __name__ == '__main__':
-    """ DAO execs. """
-    Dao().build_db()
