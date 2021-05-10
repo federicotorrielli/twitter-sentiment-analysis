@@ -29,7 +29,6 @@ class DaoMySQLDB:
                                      cursorclass=pymysql.cursors.SSCursor)
         return connection
 
-    # TODO: add comments
     def build_db(self):
         """
         Builds all tables of the relational db
@@ -151,6 +150,7 @@ class DaoMySQLDB:
     def __insert_words(self, word_sentiments: {}):
         """
         Builds word table
+        @param word_sentiments: set with words as keys and list of sentiments ids as values
         """
         with self.__connect_db() as connection:
             with connection.cursor() as cursor:
@@ -193,6 +193,7 @@ class DaoMySQLDB:
     def __insert_emoticons(self, polarity_emoticons: {}):
         """
         Builds emoticon table
+        @param polarity_emoticons: set with polarity as keys and list of emoticons as values
         """
         with self.__connect_db() as connection:
             with connection.cursor() as cursor:
@@ -209,6 +210,7 @@ class DaoMySQLDB:
     def __insert_emojis(self, polarity_emojis: {}):
         """
         Builds emoji table
+        @param polarity_emojis: set with polarity as keys and list of emoji as values
         """
         with self.__connect_db() as connection:
             with connection.cursor() as cursor:
