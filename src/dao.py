@@ -1,9 +1,10 @@
 #!/usr/bin/python3
-import warnings
+import sys
 
 import pymysql
+from pymysql import MySQLError
 from toml import load
-from src.lexical_glob import get_sentiment_words, get_sentiment_emojis, get_sentiment_emoticons
+from src.datasets_manager import get_sentiment_words, get_sentiment_emojis, get_sentiment_emoticons
 
 
 class Dao:
@@ -28,6 +29,7 @@ class Dao:
                                      cursorclass=pymysql.cursors.SSCursor)
         return connection
 
+    # TODO: add comments
     def build_db(self):
         """
         Builds all tables of the relational db
@@ -227,7 +229,7 @@ class Dao:
         """
         # TODO
 
-    def __single_exec(self, statement: str, params: [str]):
+    def _single_exec(self, statement: str, params: [str]):
         """
         Given a MySQL statement and the parameters eventually needed, it execs the statement
         @param statement: MySQL statement
@@ -241,7 +243,7 @@ class Dao:
                 cursor.execute(statement, params)
                 connection.commit()
 
-    def __single_query(self, statement: str, params: [] = None) -> [()]:
+    def _single_query(self, statement: str, params: [] = None) -> [()]:
         """
         Given a MySQL statement and the parameters eventually needed, it execs the statement
         @param statement: MySQL statement
@@ -256,8 +258,12 @@ class Dao:
                 cursor.execute("SET CHARACTER SET utf8mb4")
                 cursor.execute("SET character_set_connection=utf8mb4")
                 cursor.execute(statement, params)
-                cursor.execute(statement, params)
-                res = cursor.fetchall()
+                try:
+                    cursor.execute(statement, params)
+                    res = cursor.fetchall()
+                except MySQLError as error:
+                    print(f"Error: {error}", file=sys.stderr)
+
                 return res
 
 

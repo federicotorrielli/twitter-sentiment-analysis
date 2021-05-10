@@ -1,7 +1,7 @@
 import glob
 from requests import get
 
-from FileManager import dump_toml, read_toml
+from file_manager import dump_toml, read_toml
 
 
 def create_definitions(datasets: []):

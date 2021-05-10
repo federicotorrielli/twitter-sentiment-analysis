@@ -8,7 +8,7 @@ from nltk import download
 from nltk.corpus import stopwords
 from nltk.tokenize import TweetTokenizer
 
-from FileManager import read_file
+from file_manager import read_file
 from set_classification import negemoticons, posemoticons, twitter_stopwords
 # from slang import create_definitions
 from lexical_glob import get_lexical_filenames, get_lexical_Nlines
