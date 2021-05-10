@@ -60,7 +60,7 @@ def get_sentiment_emojis():
     Returns positive and negative emoji
     @return: a dict with positive/negative/other/neutral as keys and list of emoji as values
     """
+    emoji_list = set([e[0] for e in UNICODE_EMOJI_ENGLISH])
     return {'positive': [emoji for emoji in EmojiPos],
             'negative': [emoji for emoji in EmojiNeg],
-            'other': [emoji for emoji in set(OthersEmoji + (UNICODE_EMOJI_ENGLISH - EmojiPos - EmojiNeg))]}
-
+            'other': [emoji for emoji in set(OthersEmoji + list(emoji_list - set(EmojiPos) - set(EmojiNeg)))]}

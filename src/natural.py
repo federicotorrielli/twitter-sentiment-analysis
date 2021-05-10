@@ -8,7 +8,7 @@ from nltk import download
 from nltk.corpus import stopwords
 from nltk.tokenize import TweetTokenizer
 
-from file_manager import read_file
+from file_manager import read_file, get_project_root
 from set_classification import negemoticons, posemoticons, twitter_stopwords
 # from slang import create_definitions
 from lexical_glob import get_lexical_filenames, get_lexical_Nlines
@@ -172,14 +172,15 @@ def quickstart():
     """
     Quick start of the dataset sentiment analysis.
     """
-    anger_dataset = glob("../Resources/tweets/dataset_dt_anger_60k.txt")
-    anticipation_dataset = glob("../Resources/tweets/dataset_dt_anticipation_60k.txt")
-    disgust_dataset = glob("../Resources/tweets/dataset_dt_disgust_60k.txt")
-    fear_dataset = glob("../Resources/tweets/dataset_dt_fear_60k.txt")
-    joy_dataset = glob("../Resources/tweets/dataset_dt_joy_60k.txt")
-    sadness_dataset = glob("../Resources/tweets/dataset_dt_sadness_60k.txt")
-    surprise_dataset = glob("../Resources/tweets/dataset_dt_surprise_60k.txt")
-    trust_dataset = glob("../Resources/tweets/dataset_dt_trust_60k.txt")
+    root = get_project_root()
+    anger_dataset = glob(f"{root}/Resources/tweets/dataset_dt_anger_60k.txt")
+    anticipation_dataset = glob(f"{root}/Resources/tweets/dataset_dt_anticipation_60k.txt")
+    disgust_dataset = glob(f"{root}/Resources/tweets/dataset_dt_disgust_60k.txt")
+    fear_dataset = glob(f"{root}/Resources/tweets/dataset_dt_fear_60k.txt")
+    joy_dataset = glob(f"{root}/Resources/tweets/dataset_dt_joy_60k.txt")
+    sadness_dataset = glob(f"{root}/Resources/tweets/dataset_dt_sadness_60k.txt")
+    surprise_dataset = glob(f"{root}/Resources/tweets/dataset_dt_surprise_60k.txt")
+    trust_dataset = glob(f"{root}/Resources/tweets/dataset_dt_trust_60k.txt")
 
     anger_words, anger_hashtags, anger_emojis = process_dataset(anger_dataset[0])
     anticipation_words, anticipation_hashtags, anticipation_emojis = process_dataset(anticipation_dataset[0])

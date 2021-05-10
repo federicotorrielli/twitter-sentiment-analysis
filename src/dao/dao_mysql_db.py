@@ -4,12 +4,13 @@ import pymysql
 from pymysql import MySQLError
 from toml import load
 from src.datasets_manager import get_sentiment_words, get_sentiment_emojis, get_sentiment_emoticons
+from src.file_manager import get_project_root
 
 
 class DaoMySQLDB:
     def __init__(self):
         """ Relational DB """
-        auth = load("../auth/auth.toml")
+        auth = load(f"{get_project_root()}/auth/auth.toml")
         self.user = auth.get("user")
         self.pwd = auth.get("password")
         self.host = auth.get("host")
