@@ -2,9 +2,10 @@ from glob import glob
 
 from emoji import UNICODE_EMOJI_ENGLISH
 
-from src.file_manager import read_file
+from src.file_manager import get_project_root, read_file
 from src.lexical_glob import get_lexical_filenames
-from src.set_classification import EmojiPos, EmojiNeg, OthersEmoji, posemoticons, negemoticons
+from src.set_classification import (EmojiNeg, EmojiPos, OthersEmoji,
+                                    negemoticons, posemoticons)
 
 
 def get_sentiment_tweets():
@@ -12,14 +13,15 @@ def get_sentiment_tweets():
     Returns a list of tweets divided per sentiment
     @return: list of tweets divided per sentiment
     """
-    anger_dataset = glob("../Resources/tweets/dataset_dt_anger_60k.txt")
-    anticipation_dataset = glob("../Resources/tweets/dataset_dt_anticipation_60k.txt")
-    disgust_dataset = glob("../Resources/tweets/dataset_dt_disgust_60k.txt")
-    fear_dataset = glob("../Resources/tweets/dataset_dt_fear_60k.txt")
-    joy_dataset = glob("../Resources/tweets/dataset_dt_joy_60k.txt")
-    sadness_dataset = glob("../Resources/tweets/dataset_dt_sadness_60k.txt")
-    surprise_dataset = glob("../Resources/tweets/dataset_dt_surprise_60k.txt")
-    trust_dataset = glob("../Resources/tweets/dataset_dt_trust_60k.txt")
+    root = get_project_root()
+    anger_dataset = glob(f"{root}/Resources/tweets/dataset_dt_anger_60k.txt")
+    anticipation_dataset = glob(f"{root}/Resources/tweets/dataset_dt_anticipation_60k.txt")
+    disgust_dataset = glob(f"{root}/Resources/tweets/dataset_dt_disgust_60k.txt")
+    fear_dataset = glob(f"{root}/Resources/tweets/dataset_dt_fear_60k.txt")
+    joy_dataset = glob(f"{root}/Resources/tweets/dataset_dt_joy_60k.txt")
+    sadness_dataset = glob(f"{root}/Resources/tweets/dataset_dt_sadness_60k.txt")
+    surprise_dataset = glob(f"{root}/Resources/tweets/dataset_dt_surprise_60k.txt")
+    trust_dataset = glob(f"{root}/Resources/tweets/dataset_dt_trust_60k.txt")
 
     return [anger_dataset, anticipation_dataset, disgust_dataset, fear_dataset, joy_dataset, sadness_dataset,
             surprise_dataset, trust_dataset]

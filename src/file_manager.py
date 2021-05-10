@@ -1,7 +1,8 @@
 import os
 import subprocess
-import toml
 from pathlib import Path
+
+import toml
 
 
 def count_file_lines(path: str) -> int:

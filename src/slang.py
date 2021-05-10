@@ -1,7 +1,8 @@
 import glob
+
 from requests import get
 
-from file_manager import dump_toml, read_toml
+from file_manager import dump_toml, get_project_root, read_toml
 
 
 def create_definitions(datasets: []):
@@ -46,8 +47,9 @@ def create_definitions(datasets: []):
                     print(f"{word} was already in the files, adding it to definitions!")
                     definitions_dict[word] = definition
 
-        dump_toml(f"../Resources/definitions/standard_definitions_{dataset_name}.toml", definitions_dict)
-        dump_toml(f"../Resources/definitions/slang_definitions_{dataset_name}.toml", slang_dict)
+        dump_toml(f"{get_project_root()}/Resources/definitions/standard_definitions_{dataset_name}.toml",
+                  definitions_dict)
+        dump_toml(f"{get_project_root()}/Resources/definitions/slang_definitions_{dataset_name}.toml", slang_dict)
         i = i + 1
 
 
@@ -91,7 +93,7 @@ def preparse_standard_toml_files():
     Returns a list of English standard word meanings.
     @return: standard words definitions
     """
-    toml_files = glob.glob("../Resources/definitions/standard*.toml")
+    toml_files = glob.glob(f"{get_project_root()}/Resources/definitions/standard*.toml")
     listoffiles = []
     for toml_file in toml_files:
         listoffiles.append(read_toml(toml_file))
@@ -103,7 +105,7 @@ def preparse_slang_toml_files():
     Returns a list of English slang word meanings.
     @return: slang words definitions
     """
-    toml_files = glob.glob("../Resources/definitions/slang*.toml")
+    toml_files = glob.glob(f"{get_project_root()}/Resources/definitions/slang*.toml")
     listoffiles = []
     for toml_file in toml_files:
         listoffiles.append(read_toml(toml_file))

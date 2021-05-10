@@ -1,17 +1,18 @@
 #!/usr/bin/python3
 from collections import Counter
-from glob import glob
 from pprint import pprint
+from timeit import default_timer as timer
 
 from emoji import UNICODE_EMOJI_ENGLISH
 from nltk import download
 from nltk.corpus import stopwords
 from nltk.tokenize import TweetTokenizer
 
-from file_manager import read_file, get_project_root
-from set_classification import negemoticons, posemoticons, twitter_stopwords
+from file_manager import read_file
 # from slang import create_definitions
 from lexical_glob import get_lexical_filenames, get_lexical_Nlines
+from set_classification import negemoticons, posemoticons, twitter_stopwords
+from src.datasets_manager import get_sentiment_tweets
 
 tokenizer = TweetTokenizer()
 
@@ -107,6 +108,8 @@ def process_dataset(file_path: str):
     list of Count tuples of most used hashtags,
     list of Count tuples of emojis
     """
+    print(f"Processing dataset file {file_path}")
+    start = timer()
     wordlist = []
     file = read_file(file_path)
     stopset = create_stopword_list()
@@ -117,6 +120,8 @@ def process_dataset(file_path: str):
     most_used_hashtags = count_hashtags(count_tuples)
     emojis = count_emojis(count_tuples)
     count_tuples = exclude_hastags_emojis(count_tuples)
+    end = timer()
+    print(f"Done processing in {end - start} seconds")
     return count_tuples, most_used_hashtags, emojis
 
 
@@ -172,24 +177,15 @@ def quickstart():
     """
     Quick start of the dataset sentiment analysis.
     """
-    root = get_project_root()
-    anger_dataset = glob(f"{root}/Resources/tweets/dataset_dt_anger_60k.txt")
-    anticipation_dataset = glob(f"{root}/Resources/tweets/dataset_dt_anticipation_60k.txt")
-    disgust_dataset = glob(f"{root}/Resources/tweets/dataset_dt_disgust_60k.txt")
-    fear_dataset = glob(f"{root}/Resources/tweets/dataset_dt_fear_60k.txt")
-    joy_dataset = glob(f"{root}/Resources/tweets/dataset_dt_joy_60k.txt")
-    sadness_dataset = glob(f"{root}/Resources/tweets/dataset_dt_sadness_60k.txt")
-    surprise_dataset = glob(f"{root}/Resources/tweets/dataset_dt_surprise_60k.txt")
-    trust_dataset = glob(f"{root}/Resources/tweets/dataset_dt_trust_60k.txt")
-
-    anger_words, anger_hashtags, anger_emojis = process_dataset(anger_dataset[0])
-    anticipation_words, anticipation_hashtags, anticipation_emojis = process_dataset(anticipation_dataset[0])
-    disgust_words, disgust_hashtags, disgust_emojis = process_dataset(disgust_dataset[0])
-    fear_words, fear_hashtags, fear_emojis = process_dataset(fear_dataset[0])
-    joy_words, joy_hashtags, joy_emojis = process_dataset(joy_dataset[0])
-    sadness_words, sadness_hashtags, sadness_emojis = process_dataset(sadness_dataset[0])
-    surprise_words, surprise_hashtags, surprise_emojis = process_dataset(surprise_dataset[0])
-    trust_words, trust_hashtags, trust_emojis = process_dataset(trust_dataset[0])
+    sentiment_files = get_sentiment_tweets()
+    anger_words, anger_hashtags, anger_emojis = process_dataset(sentiment_files[0][0])
+    anticipation_words, anticipation_hashtags, anticipation_emojis = process_dataset(sentiment_files[1][0])
+    disgust_words, disgust_hashtags, disgust_emojis = process_dataset(sentiment_files[2][0])
+    fear_words, fear_hashtags, fear_emojis = process_dataset(sentiment_files[3][0])
+    joy_words, joy_hashtags, joy_emojis = process_dataset(sentiment_files[4][0])
+    sadness_words, sadness_hashtags, sadness_emojis = process_dataset(sentiment_files[5][0])
+    surprise_words, surprise_hashtags, surprise_emojis = process_dataset(sentiment_files[6][0])
+    trust_words, trust_hashtags, trust_emojis = process_dataset(sentiment_files[7][0])
     word_datasets = [anger_words, anticipation_words, disgust_words, fear_words, joy_words, sadness_words,
                      surprise_words, trust_words]
     shared_words = check_shared_words(word_datasets)
