@@ -187,12 +187,14 @@ def quickstart():
     sadness_words, sadness_hashtags, sadness_emojis = process_dataset(sentiment_files[5][0])
     surprise_words, surprise_hashtags, surprise_emojis = process_dataset(sentiment_files[6][0])
     trust_words, trust_hashtags, trust_emojis = process_dataset(sentiment_files[7][0])
+    emoji_datasets = [anger_emojis, anticipation_emojis, disgust_emojis, fear_emojis, joy_emojis, sadness_emojis,
+                      surprise_emojis, trust_emojis]
     word_datasets = [anger_words, anticipation_words, disgust_words, fear_words, joy_words, sadness_words,
                      surprise_words, trust_words]
     shared_words = check_shared_words(word_datasets)
     perc_calc = calc_perc_sharedwords(shared_words, word_datasets)
     pprint(perc_calc)
-    wordcl = WordCloudCreator(word_datasets)
+    wordcl = WordCloudCreator(word_datasets, emoji_datasets)
     wordcl.generate()
     # create_definitions(word_datasets)
 
