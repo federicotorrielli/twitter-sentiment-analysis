@@ -13,6 +13,7 @@ from file_manager import read_file
 from lexical_glob import get_lexical_filenames, get_lexical_Nlines
 from set_classification import negemoticons, posemoticons, twitter_stopwords
 from src.datasets_manager import get_sentiment_tweets
+from src.wordcloudgenerator import WordCloudCreator
 
 tokenizer = TweetTokenizer()
 
@@ -191,6 +192,8 @@ def quickstart():
     shared_words = check_shared_words(word_datasets)
     perc_calc = calc_perc_sharedwords(shared_words, word_datasets)
     pprint(perc_calc)
+    wordcl = WordCloudCreator(word_datasets)
+    wordcl.generate()
     # create_definitions(word_datasets)
 
 
