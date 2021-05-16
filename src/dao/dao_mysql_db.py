@@ -251,7 +251,7 @@ class DaoMySQLDB:
         Builds twitter_message table
         @param tweets_content: list of tweets' content
         """
-        # TODO
+        # TODO: tweets, definitions, counts, percs
 
     def _easy_statement_exec(self, statement: str, params: [str]):
         """
