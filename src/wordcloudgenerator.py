@@ -59,7 +59,9 @@ class WordCloudCreator:
                                    max_words=2500,
                                    max_font_size=50,
                                    mask=colored_image,
-                                   random_state=42)
+                                   random_state=42,
+                                   width=1920,
+                                   height=1080)
             plt.figure(figsize=(20, 11.25), dpi=96)
             wordlist = self.__preprocess_wordlist(wordlist)
         else:
@@ -67,7 +69,7 @@ class WordCloudCreator:
             wordobject = WordCloud(background_color='black',
                                    max_words=500,
                                    font_path=font_path)
-            plt.figure(figsize=(10, 5.25))
+            plt.figure(figsize=(16, 9))
         wordcl = wordobject.generate_from_frequencies(wordlist)
         plt.imshow(wordcl.recolor(color_func=image_colors), interpolation='gaussian')
         plt.axis('off')
@@ -80,8 +82,10 @@ class WordCloudCreator:
         print(f"Creating the image for emotion-emoticon: {emotion}")
         start = timer()
         wordobject = WordCloud(background_color='black',
-                               max_words=1000)
-        plt.figure(figsize=(10, 5.25))
+                               max_words=1000,
+                               width=1600,
+                               height=900)
+        plt.figure(figsize=(16, 9))
         wordcl = wordobject.generate_from_frequencies(emoticon_list)
         plt.imshow(wordcl)
         plt.axis('off')
