@@ -84,8 +84,8 @@ def count_emojis(count_tuples):
     @param count_tuples:
     @return: list of Count tuples
     """
-    return [item for item in count_tuples.most_common() if item[0] in UNICODE_EMOJI_ENGLISH
-            or item[0] in posemoticons or item[0] in negemoticons]
+    return [item for item in count_tuples.most_common() if item[0] in UNICODE_EMOJI_ENGLISH], \
+           [item for item in count_tuples.most_common() if item[0] in posemoticons or item[0] in negemoticons]
 
 
 def exclude_hastags_emojis(count_tuples):
@@ -119,11 +119,11 @@ def process_dataset(file_path: str):
         wordlist.append(processed_phrase)
     count_tuples = count_words(wordlist)
     most_used_hashtags = count_hashtags(count_tuples)
-    emojis = count_emojis(count_tuples)
+    emojis, emoticons = count_emojis(count_tuples)
     count_tuples = exclude_hastags_emojis(count_tuples)
     end = timer()
     print(f"Done processing in {end - start} seconds")
-    return count_tuples, most_used_hashtags, emojis
+    return count_tuples, most_used_hashtags, emojis, emoticons
 
 
 def convert_to_set(dataset):
@@ -179,20 +179,26 @@ def quickstart():
     Quick start of the dataset sentiment analysis.
     """
     sentiment_files = get_sentiment_tweets()
-    anger_words, anger_hashtags, anger_emojis = process_dataset(sentiment_files[0][0])
-    anticipation_words, anticipation_hashtags, anticipation_emojis = process_dataset(sentiment_files[1][0])
-    disgust_words, disgust_hashtags, disgust_emojis = process_dataset(sentiment_files[2][0])
-    fear_words, fear_hashtags, fear_emojis = process_dataset(sentiment_files[3][0])
-    joy_words, joy_hashtags, joy_emojis = process_dataset(sentiment_files[4][0])
-    sadness_words, sadness_hashtags, sadness_emojis = process_dataset(sentiment_files[5][0])
-    surprise_words, surprise_hashtags, surprise_emojis = process_dataset(sentiment_files[6][0])
-    trust_words, trust_hashtags, trust_emojis = process_dataset(sentiment_files[7][0])
+    anger_words, anger_hashtags, anger_emojis, anger_emoticons = process_dataset(sentiment_files[0][0])
+    anticipation_words, anticipation_hashtags, anticipation_emojis, anticipation_emoticons = process_dataset(
+        sentiment_files[1][0])
+    disgust_words, disgust_hashtags, disgust_emojis, disgust_emoticons = process_dataset(sentiment_files[2][0])
+    fear_words, fear_hashtags, fear_emojis, fear_emoticons = process_dataset(sentiment_files[3][0])
+    joy_words, joy_hashtags, joy_emojis, joy_emoticons = process_dataset(sentiment_files[4][0])
+    sadness_words, sadness_hashtags, sadness_emojis, sadness_emoticons = process_dataset(sentiment_files[5][0])
+    surprise_words, surprise_hashtags, surprise_emojis, surprise_emoticons = process_dataset(sentiment_files[6][0])
+    trust_words, trust_hashtags, trust_emojis, trust_emoticons = process_dataset(sentiment_files[7][0])
+    emoji_datasets = [anger_emojis, anticipation_emojis, disgust_emojis, fear_emojis, joy_emojis, sadness_emojis,
+                      surprise_emojis, trust_emojis]
     word_datasets = [anger_words, anticipation_words, disgust_words, fear_words, joy_words, sadness_words,
                      surprise_words, trust_words]
+    emoticons_datasets = [anger_emoticons, anticipation_emoticons, disgust_emoticons, fear_emoticons, joy_emoticons,
+                          sadness_emoticons,
+                          surprise_emoticons, trust_emoticons]
     shared_words = check_shared_words(word_datasets)
     perc_calc = calc_perc_sharedwords(shared_words, word_datasets)
     pprint(perc_calc)
-    wordcl = WordCloudCreator(word_datasets)
+    wordcl = WordCloudCreator(word_datasets, emoji_datasets, emoticons_datasets)
     wordcl.generate()
     # create_definitions(word_datasets)
 
