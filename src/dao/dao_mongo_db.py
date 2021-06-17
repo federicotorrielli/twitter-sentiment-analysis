@@ -33,6 +33,8 @@ class DaoMongoDB:
             emoji_table.insert(self.emoji_datasets[index], check_keys=False)
             emoticon_table.insert(self.emoticon_datasets[index], check_keys=False)
 
+        self.find_count("damn", "anger_word")
+
     def _easy_statement_exec(self, statement: str, params: [str]):
         """
         Given a statement and the parameters eventually needed, it execs the statement
@@ -41,6 +43,19 @@ class DaoMongoDB:
         @return: cursor
         """
         # TODO:
+
+    def __get_collection(self, collection_name: str):
+        return self.database[collection_name]
+
+    def find_count(self, key, collection_name):
+        """
+        Given the key, it returns the count of it
+        @param collection_name:
+        @param key:
+        @return: the number of times that word appeared
+        """
+        collection = self.__get_collection(collection_name)
+        return collection.find()[0][key]
 
     def test_db(self):
         """
