@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from glob import glob
 
 from emoji import UNICODE_EMOJI_ENGLISH
