@@ -8,12 +8,19 @@ from src.file_manager import get_project_root, read_file
 
 
 class Dao:
-    def __init__(self, type_db: bool):
+    def __init__(self, type_db: bool, word_datasets=None, emoji_datasets=None, emoticon_datasets=None):
         """
         DAO init
         @param type_db: True = relationalDB, False = MongoDB
         """
-        self.dao_type = DaoMySQLDB() if type_db else DaoMongoDB()
+        if emoticon_datasets is None:
+            emoticon_datasets = []
+        if word_datasets is None:
+            word_datasets = []
+        if emoji_datasets is None:
+            emoji_datasets = []
+
+        self.dao_type = DaoMySQLDB() if type_db else DaoMongoDB(word_datasets, emoji_datasets, emoticon_datasets)
 
     def build_db(self):
         """
