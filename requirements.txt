@@ -8,3 +8,5 @@ numpy~=1.20.3
 matplotlib~=3.4.2
 wordcloud~=1.8.1
 Pillow~=8.2.0
+pymongo~=3.11.4
+dnspython>=2.1.0

@@ -63,7 +63,8 @@ def count_words(wordlist):
     final_list = []
     for tokenized_phrase in wordlist:
         for word in tokenized_phrase:
-            final_list.append(word)
+            if not word.startswith(".") and not word.startswith("$"):
+                final_list.append(word)
     return Counter(x for x in final_list)
 
 
@@ -123,6 +124,11 @@ def process_dataset(file_path: str):
     count_tuples = exclude_hastags_emojis(count_tuples)
     end = timer()
     print(f"Done processing in {end - start} seconds")
+    
+    count_tuples = dict(count_tuples)
+    most_used_hashtags = dict(most_used_hashtags)
+    emojis = dict(emojis)
+    emoticons = dict(emoticons)
     return count_tuples, most_used_hashtags, emojis, emoticons
 
 
@@ -178,6 +184,9 @@ def quickstart():
     """
     Quick start of the dataset sentiment analysis.
     """
+    download('punkt')
+    download('stopwords')
+
     sentiment_files = get_sentiment_tweets()
     anger_words, anger_hashtags, anger_emojis, anger_emoticons = process_dataset(sentiment_files[0][0])
     anticipation_words, anticipation_hashtags, anticipation_emojis, anticipation_emoticons = process_dataset(
@@ -198,12 +207,10 @@ def quickstart():
     shared_words = check_shared_words(word_datasets)
     perc_calc = calc_perc_sharedwords(shared_words, word_datasets)
     pprint(perc_calc)
-    wordcl = WordCloudCreator(word_datasets, emoji_datasets, emoticons_datasets)
-    wordcl.generate()
+
+    return word_datasets, emoji_datasets, emoticons_datasets
     # create_definitions(word_datasets)
 
 
 if __name__ == '__main__':
-    download('punkt')
-    download('stopwords')
     quickstart()
