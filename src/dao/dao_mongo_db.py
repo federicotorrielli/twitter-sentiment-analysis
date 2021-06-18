@@ -1,17 +1,18 @@
 #!/usr/bin/python3
+import pprint
+
 import pymongo
+
+from src.file_manager import read_file
 
 
 class DaoMongoDB:
-    def __init__(self, word_datasets, emoji_datasets, emoticon_datasets):
+    def __init__(self):
         """ Mongo DB """
         self.client = pymongo.MongoClient(
             "mongodb+srv://database:ivanfederico@cluster0.9hwxj.mongodb.net/twitter"
             "?retryWrites=true&w=majority")
         self.database = self.client.database
-        self.emoticon_datasets = emoticon_datasets
-        self.emoji_datasets = emoji_datasets
-        self.word_datasets = word_datasets
 
     def build_db(self, sentiments, words, emoticons, emojis, tweets):
         """
@@ -24,16 +25,25 @@ class DaoMongoDB:
         # First we drop everything, just to make sure
         self.database.command('dropDatabase')
 
-        # Then we insert everything as specified
         for index, sentiment in enumerate(sentiments):
-            word_table = self.database[f'{sentiment}_word']
-            emoji_table = self.database[f'{sentiment}_emoji']
-            emoticon_table = self.database[f'{sentiment}_emoticon']
-            word_table.insert(self.word_datasets[index], check_keys=False)
-            emoji_table.insert(self.emoji_datasets[index], check_keys=False)
-            emoticon_table.insert(self.emoticon_datasets[index], check_keys=False)
+            tweet_document = self.database[f'{sentiment}_tweets']
+            self.__insert_tweets(tweet_document, tweets[index], sentiment)
+            word_document = self.database[f'{sentiment}_words']
+            word_document.insert(words)
+            emoji_document = self.database[f'{sentiment}_emoji']
+            emoji_document.insert(emojis)
+            emoticon_document = self.database[f'{sentiment}_emoticons']
+            emoticon_document.insert(emoticons)
 
-        self.find_count("damn", "anger_word")
+    def build_sentiments(self, sentiments, word_datasets, emoji_datasets, emoticon_datasets):
+        # We insert everything as specified
+        for index, sentiment in enumerate(sentiments):
+            word_table = self.database[f'{sentiment}_words_frequency']
+            emoji_table = self.database[f'{sentiment}_emoji_frequency']
+            emoticon_table = self.database[f'{sentiment}_emoticon_frequency']
+            word_table.insert(word_datasets[index], check_keys=False)
+            emoji_table.insert(emoji_datasets[index], check_keys=False)
+            emoticon_table.insert(emoticon_datasets[index], check_keys=False)
 
     def _easy_statement_exec(self, statement: str, params: [str]):
         """
@@ -50,12 +60,21 @@ class DaoMongoDB:
     def find_count(self, key, collection_name):
         """
         Given the key, it returns the count of it
-        @param collection_name:
-        @param key:
-        @return: the number of times that word appeared
+        @param collection_name: the name of the mongo document (like anger_word)
+        @param key: the word or emoji you are trying to find
+        @return: the number of times that word appeared, the id of the object
         """
         collection = self.__get_collection(collection_name)
-        return collection.find()[0][key]
+        result = collection.find({}, {key: 1})[0]
+        return result[key], result['_id']
+
+    def get_document(self, collection_name):
+        """
+        Given a collection name it returns the dict containing the document
+        @param collection_name: name of the mongo collection
+        @return: dict of the document
+        """
+        return self.__get_collection(collection_name).find()[0]
 
     def test_db(self):
         """
@@ -63,3 +82,15 @@ class DaoMongoDB:
         @return: the test dict
         """
         return self.client.test
+
+    def __insert_tweets(self, tweet_document, file_path, sentiment):
+        file = read_file(file_path)
+        tweet_dict = {}
+        for key, line in enumerate(file.splitlines()):
+            tweet_dict[f'{sentiment}_{key}'] = line
+        tweet_document.insert(tweet_dict)
+
+
+if __name__ == '__main__':
+    dao = DaoMongoDB()
+    print(dao.get_document('anger_tweets')['anger_0'])
