@@ -8,7 +8,7 @@ def start_comparison(db_type="MongoDB"):
     full_time = timer()
     print(f"Building {db_type}...")
     start = timer()
-    spec_dao = Dao(db_type is not "MongoDB")
+    spec_dao = Dao(db_type != "MongoDB")
     spec_dao.build_db()
     end = timer()
     print(f"Done building {db_type} in {end - start} seconds")
