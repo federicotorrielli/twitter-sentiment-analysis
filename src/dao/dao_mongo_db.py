@@ -13,6 +13,8 @@ class DaoMongoDB:
             "mongodb+srv://database:ivanfederico@cluster0.9hwxj.mongodb.net/twitter"
             "?retryWrites=true&w=majority")
         self.database = self.client.database
+        self.word_numbers = {"anger": 0, "anticipation": 0, "disgust": 0, "fear": 0, "joy": 0, "sadness": 0,
+                             "surprise": 0, "trust": 0}
 
     def build_db(self, sentiments, words, emoticons, emojis, tweets):
         """
@@ -34,6 +36,11 @@ class DaoMongoDB:
             emoji_document.insert(emojis)
             emoticon_document = self.database[f'{sentiment}_emoticons']
             emoticon_document.insert(emoticons)
+
+    def __get_word_numbers(self, sentiment):
+        if self.word_numbers[sentiment] == 0:
+            self.word_numbers[sentiment] = len(self.get_document(f"{sentiment}_words"))
+        return self.word_numbers[sentiment]
 
     def build_sentiments(self, sentiments, word_datasets, emoji_datasets, emoticon_datasets):
         # We insert everything as specified
@@ -57,16 +64,20 @@ class DaoMongoDB:
     def __get_collection(self, collection_name: str):
         return self.database[collection_name]
 
-    def find_count(self, key, collection_name):
+    def find_count(self, word):
         """
-        Given the key, it returns the count of it
-        @param collection_name: the name of the mongo document (like anger_word)
-        @param key: the word or emoji you are trying to find
-        @return: the number of times that word appeared, the id of the object
+        Given the word, it returns the count of it
+        @param word: the word or emoji you are trying to find
+        @return: the number of times that word appeared for every sentiment
         """
-        collection = self.__get_collection(collection_name)
-        result = collection.find({}, {key: 1})[0]
-        return result[key], result['_id']
+        sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
+        final_list = {}
+        for sentiment in sentiments:
+            collection = self.__get_collection(f"{sentiment}_words_frequency")
+            result = collection.find({}, {word: 1})[0]
+            if word in result:
+                final_list[sentiment] = result[word]
+        return final_list
 
     def get_document(self, collection_name):
         """
@@ -119,7 +130,30 @@ class DaoMongoDB:
                 pass
         return "NOTHING FOUND"
 
+    def push_result(self, word: str):
+        if word != "_id" and "." not in word and "$" not in word:
+            results = self.__get_collection("results")
+            results.insert({
+                word: {
+                    "count": self.find_count(word),
+                    "definition": self.get_definition(word),
+                    "popularity": self.get_popularity(word)
+                }
+            })
 
-if __name__ == '__main__':
-    dao = DaoMongoDB()
-    print(dao.get_definition("classy"))
+    def get_result(self, word: str):
+        results = self.__get_collection("results")
+        word_result = results.find({}, {word: 1})[0]
+        if word in word_result:
+            return word_result[word]
+        else:
+            return {}
+
+    def get_popularity(self, word: str):
+        sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
+        final_list = {}
+        for sentiment in sentiments:
+            if word in self.find_count(word)[sentiment]:
+                final_list[sentiment] = \
+                    f"{self.find_count(word)[sentiment] / self.__get_word_numbers(sentiment)}%"
+        return final_list

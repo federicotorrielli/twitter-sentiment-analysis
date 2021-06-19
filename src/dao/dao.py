@@ -15,14 +15,14 @@ class Dao:
             self.dao_type = DaoMySQLDB()
         else:
             self.dao_type = DaoMongoDB()
+        self.sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
 
     def build_db(self):
         """
         Builds the DB
         """
-        sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
-        self.dao_type.build_db(sentiments, get_sentiment_words(), get_sentiment_emoticons(), get_sentiment_emojis(),
-                               get_sentiment_tweets())
+        self.dao_type.build_db(self.sentiments, get_sentiment_words(), get_sentiment_emoticons(),
+                               get_sentiment_emojis(), get_sentiment_tweets())
 
     def get_document(self, collection_name):
         """
@@ -40,14 +40,21 @@ class Dao:
         @param emoji_datasets:
         @param emoticon_datasets:
         """
-        sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
-        self.dao_type.build_sentiments(sentiments, word_datasets, emoji_datasets, emoticon_datasets)
+        self.dao_type.build_sentiments(self.sentiments, word_datasets, emoji_datasets, emoticon_datasets)
         # TODO: do it in dao_mysql_db
 
     def dump_definitions(self, definitions: dict, name: str):
+        # TODO: do it in dao_mysql_db (see the mongo implementation)
         self.dao_type.dump_definitions(definitions, name)
-        # TODO: do it in dao_mysql_db
 
     def get_definition(self, word: str, sentiment: str = "") -> str:
-        # TODO: do it in dao_mysql_db
+        # TODO: do it in dao_mysql_db (see the mongo implementation)
         return self.dao_type.get_definition(word, sentiment)
+
+    def push_result(self, word: str):
+        # TODO: do it in dao_mysql_db (see issue #10)
+        return self.dao_type.push_result(word)
+
+    def get_result(self, word: str):
+        # TODO: same
+        return self.dao_type.get_result(word)

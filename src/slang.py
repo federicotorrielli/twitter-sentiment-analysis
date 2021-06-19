@@ -25,7 +25,8 @@ def create_definitions(datasets: [], dao: Dao):
         definitions_dict = {}
 
         for word, count in sentiment.items():
-            if not word == "true" and not word == "false" and not word == "_id":
+            if not word == "true" and not word == "false" and not word == "_id"\
+                    and "." not in word and "$" not in word:
                 definition = check_word_existence(word, standard_toml_files)
                 if definition == "":
                     definition = check_word_existence(word, slang_toml_files)
@@ -38,6 +39,8 @@ def create_definitions(datasets: [], dao: Dao):
                                 definition = get_slang_definition(word)
                                 if definition != "":
                                     slang_dict[word] = definition
+                                else:
+                                    slang_dict[word] = "no definition found."
                             else:
                                 definitions_dict[word] = definition
                     else:

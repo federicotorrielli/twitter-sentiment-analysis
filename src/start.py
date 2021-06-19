@@ -25,5 +25,8 @@ if __name__ == '__main__':
     dao = start_comparison("MongoDB")
     # dao2 = start_comparison("MySQL")
 
-    # wordcl = WordCloudCreator(dao)
-    # wordcl.generate()
+    if input("Do you want to generate the Wordcloud(s)? This could take 10 minutes or more! [y/N] ").lower() == "y":
+        wordcl = WordCloudCreator(dao)
+        wordcl.generate()
+
+# TODO: create a test function that gets what explained in issue #10

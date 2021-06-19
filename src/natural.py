@@ -175,6 +175,18 @@ def calc_perc_sharedwords(shared_words, word_datasets):
     return returndict
 
 
+def create_word_final_result(dao):
+    word_datasets = []
+    sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
+    for sentiment in sentiments:
+        word_datasets.append(dao.get_document(f"{sentiment}_words_frequency"))
+
+    for dataset in word_datasets:
+        for value in dataset.keys():
+            print(f"Creating result for word: {value}")
+            dao.push_result(value)
+
+
 def quickstart(dao: Dao):
     """
     Quick start of the dataset sentiment analysis.
@@ -204,14 +216,14 @@ def quickstart(dao: Dao):
     word_datasets = [anger_words, anticipation_words, disgust_words, fear_words, joy_words, sadness_words,
                      surprise_words, trust_words]
     emoticons_datasets = [anger_emoticons, anticipation_emoticons, disgust_emoticons, fear_emoticons, joy_emoticons,
-                          sadness_emoticons,
-                          surprise_emoticons, trust_emoticons]
+                          sadness_emoticons, surprise_emoticons, trust_emoticons]
     dao.build_sentiments(word_datasets, emoji_datasets, emoticons_datasets)
+
+    if input("Do you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
+        create_definitions(word_datasets, dao)
+        if input("Do you want to create results for the words? (this can take up to 45 minutes) [y/N] ").lower() == "y":
+            create_word_final_result(dao)
 
     shared_words = check_shared_words(word_datasets)
     perc_calc = calc_perc_sharedwords(shared_words, word_datasets)
-    pprint(perc_calc)
-
-    # TODO: save the stats in a file or on DB
-    if input("Do you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
-        create_definitions(word_datasets, dao)
+    pprint(perc_calc)  # TODO: maybe we can store these percentages?
