@@ -9,10 +9,9 @@ from nltk.corpus import stopwords
 from nltk.tokenize import TweetTokenizer
 
 from file_manager import read_file
-# from slang import create_definitions
 from lexical_glob import get_lexical_filenames, get_lexical_Nlines
 from set_classification import negemoticons, posemoticons, twitter_stopwords
-from src.dao.dao import Dao
+from dao.dao import Dao
 
 tokenizer = TweetTokenizer()
 
@@ -175,17 +174,12 @@ def calc_perc_sharedwords(shared_words, word_datasets):
     return returndict
 
 
-def quickstart(db_type: str):
+def quickstart(dao: Dao):
     """
     Quick start of the dataset sentiment analysis.
     """
     download('punkt')
     download('stopwords')
-    if db_type == 'mongo':
-        db_type = False
-    else:
-        db_type = True
-    dao = Dao(db_type)
 
     anger_words, anger_hashtags, anger_emojis, anger_emoticons = \
         process_dataset(dao.get_document('anger_tweets'), 'anger_tweets')

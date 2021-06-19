@@ -3,20 +3,27 @@ from wordcloudgenerator import WordCloudCreator
 from dao.dao import Dao
 from timeit import default_timer as timer
 
+
+def start_comparison(db_type="MongoDB"):
+    full_time = timer()
+    print(f"Building {db_type}...")
+    start = timer()
+    spec_dao = Dao(db_type is not "MongoDB")
+    spec_dao.build_db()
+    end = timer()
+    print(f"Done building {db_type} in {end - start} seconds")
+
+    start = timer()
+    quickstart(spec_dao)
+    end = timer()
+    print(f"Done NLP for {db_type} in {end - start} seconds")
+    print(f"Done everything in {end - full_time} seconds")
+    return spec_dao
+
+
 if __name__ == '__main__':
-    # TODO: quickstart the mysql db here
+    dao = start_comparison("MongoDB")
+    # dao2 = start_comparison("MySQL")
 
-    print("Building MongoDB...")
-    start = timer()
-    dao_mongo = Dao(False)
-    dao_mongo.build_db()
-    end = timer()
-    print(f"Done building MongoDB in {end - start} seconds")
-
-    start = timer()
-    quickstart("mongo")
-    end = timer()
-    print(f"Done NLP for MongoDB in {end - start} seconds")
-
-    wordcl = WordCloudCreator(dao_mongo)
+    wordcl = WordCloudCreator(dao)
     wordcl.generate()
