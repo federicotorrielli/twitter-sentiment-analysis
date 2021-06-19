@@ -12,6 +12,7 @@ from file_manager import read_file
 from lexical_glob import get_lexical_filenames, get_lexical_Nlines
 from set_classification import negemoticons, posemoticons, twitter_stopwords
 from dao.dao import Dao
+from src.slang import create_definitions
 
 tokenizer = TweetTokenizer()
 
@@ -210,5 +211,7 @@ def quickstart(dao: Dao):
     shared_words = check_shared_words(word_datasets)
     perc_calc = calc_perc_sharedwords(shared_words, word_datasets)
     pprint(perc_calc)
+
     # TODO: save the stats in a file or on DB
-    # create_definitions(word_datasets)
+    if input("Do you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
+        create_definitions(word_datasets, dao)

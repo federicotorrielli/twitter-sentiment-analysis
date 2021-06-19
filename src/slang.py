@@ -3,12 +3,14 @@ import glob
 from requests import get
 
 from file_manager import dump_toml, get_project_root, read_toml
+from src.dao.dao import Dao
 
 
-def create_definitions(datasets: []):
+def create_definitions(datasets: [], dao: Dao):
     """
     Foreach Plutchik emotion, it finds words definition from datasets and
     it writes them to toml files.
+    @param dao:
     @param datasets:
     """
     i = 0
@@ -22,14 +24,12 @@ def create_definitions(datasets: []):
         slang_dict = {}
         definitions_dict = {}
 
-        for word_tuple in sentiment:
-            word = word_tuple[0]
-            if not word == "true" and not word == "false":
+        for word, count in sentiment.items():
+            if not word == "true" and not word == "false" and not word == "_id":
                 definition = check_word_existence(word, standard_toml_files)
                 if definition == "":
                     definition = check_word_existence(word, slang_toml_files)
                     if definition == "":
-                        count = word_tuple[1]
                         if count > 5 and len(word) > 3:
                             definition = get_dictionary_definition(word)
                             print(f"Searching: {word}, used {count} times, definition: {definition[:35]}...")
@@ -50,6 +50,8 @@ def create_definitions(datasets: []):
         dump_toml(f"{get_project_root()}/Resources/definitions/standard_definitions_{dataset_name}.toml",
                   definitions_dict)
         dump_toml(f"{get_project_root()}/Resources/definitions/slang_definitions_{dataset_name}.toml", slang_dict)
+        dao.dump_definitions(definitions_dict, f"standard_definitions_{dataset_name}")
+        dao.dump_definitions(slang_dict, f"slang_definitions_{dataset_name}")
         i = i + 1
 
 

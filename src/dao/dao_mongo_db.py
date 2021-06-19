@@ -90,7 +90,36 @@ class DaoMongoDB:
             tweet_dict[f'{sentiment}_{key}'] = line
         tweet_document.insert(tweet_dict)
 
+    def dump_definitions(self, definitions: dict, name: str):
+        definition_document = self.database[f'{name}']
+        definition_document.insert(definitions)
+
+    def get_definition(self, word: str, sentiment: str = "") -> str:
+        """
+        Gets the definition of the given word
+        @param word:
+        @param sentiment: optionally you can input a specific sentiment
+        @return: the definition
+        """
+        if sentiment == "":
+            sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
+        else:
+            sentiments = [sentiment]
+        # If we don't define a sentiment, we cycle through them all
+        for s in sentiments:
+            definition_document = self.database[f'standard_definitions_{s}']
+            slang_document = self.database[f'slang_definitions_{s}']
+            result1 = definition_document.find({}, {word: 1})[0]
+            result2 = slang_document.find({}, {word: 1})[0]
+            if word in result1:
+                return result1[word]
+            elif word in result2:
+                return result2[word]
+            else:
+                pass
+        return "NOTHING FOUND"
+
 
 if __name__ == '__main__':
     dao = DaoMongoDB()
-    print(dao.get_document('anger_tweets')['anger_0'])
+    print(dao.get_definition("classy"))

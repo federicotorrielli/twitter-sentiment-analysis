@@ -43,3 +43,11 @@ class Dao:
         sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
         self.dao_type.build_sentiments(sentiments, word_datasets, emoji_datasets, emoticon_datasets)
         # TODO: do it in dao_mysql_db
+
+    def dump_definitions(self, definitions: dict, name: str):
+        self.dao_type.dump_definitions(definitions, name)
+        # TODO: do it in dao_mysql_db
+
+    def get_definition(self, word: str, sentiment: str = "") -> str:
+        # TODO: do it in dao_mysql_db
+        return self.dao_type.get_definition(word, sentiment)

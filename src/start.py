@@ -25,5 +25,5 @@ if __name__ == '__main__':
     dao = start_comparison("MongoDB")
     # dao2 = start_comparison("MySQL")
 
-    wordcl = WordCloudCreator(dao)
-    wordcl.generate()
+    # wordcl = WordCloudCreator(dao)
+    # wordcl.generate()
