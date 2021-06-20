@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 from src.dao.dao_mongo_db import DaoMongoDB
 from src.dao.dao_mysql_db import DaoMySQLDB
-from src.datasets_manager import get_sentiment_words, get_sentiment_emoticons, get_sentiment_emojis, \
-    get_sentiment_tweets
+from src.datasets_manager import (get_sentiment_emojis,
+                                  get_sentiment_emoticons,
+                                  get_sentiment_tweets, get_sentiment_words)
 
 
 class Dao:

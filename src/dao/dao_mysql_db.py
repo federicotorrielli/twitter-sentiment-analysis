@@ -1,10 +1,12 @@
 #!/usr/bin/python3
 import sys
+
 import pymysql
 from pymysql import MySQLError
-from toml import load
-from src.datasets_manager import get_sentiment_words, get_sentiment_emojis, get_sentiment_emoticons
+from src.datasets_manager import (get_sentiment_emojis,
+                                  get_sentiment_emoticons, get_sentiment_words)
 from src.file_manager import get_project_root
+from toml import load
 
 
 def _execute_statement(cursor, statement: str, params: [] = None):
