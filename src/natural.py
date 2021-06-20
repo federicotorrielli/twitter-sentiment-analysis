@@ -8,10 +8,10 @@ from nltk import download
 from nltk.corpus import stopwords
 from nltk.tokenize import TweetTokenizer
 
+from dao.dao import Dao
 from file_manager import read_file
 from lexical_glob import get_lexical_filenames, get_lexical_Nlines
 from set_classification import negemoticons, posemoticons, twitter_stopwords
-from dao.dao import Dao
 from src.slang import create_definitions
 
 tokenizer = TweetTokenizer()
@@ -176,15 +176,35 @@ def calc_perc_sharedwords(shared_words, word_datasets):
 
 
 def create_word_final_result(dao):
+    start = timer()
     word_datasets = []
     sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
     for sentiment in sentiments:
         word_datasets.append(dao.get_document(f"{sentiment}_words_frequency"))
 
+    result_list = []
+    input_set = []
     for dataset in word_datasets:
-        for value in dataset.keys():
-            print(f"Creating result for word: {value}")
-            dao.push_result(value)
+        input_set += dataset
+    input_set = set(input_set)
+
+    if "_id" in input_set:
+        input_set.remove("_id")
+    for value in input_set:
+        print(f"Creating result for word: {value}")
+        count = dao.get_count(value)
+        result_list.append(
+            {
+                "word": value,
+                "count": count,
+                "definition": dao.get_definition(value),
+                "popularity": dao.get_popularity(value)
+            }
+        )
+    dao.push_results(result_list)
+    dao.create_index('word', 'results')  # Index on the attribute "word" in the table results
+    end = timer()
+    print(f"Done creating the final results in {end - start} seconds")
 
 
 def quickstart(dao: Dao):
@@ -221,7 +241,7 @@ def quickstart(dao: Dao):
 
     if input("Do you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
         create_definitions(word_datasets, dao)
-        if input("Do you want to create results for the words? (this can take up to 45 minutes) [y/N] ").lower() == "y":
+        if input("Do you want to create results for the words? [y/N] ").lower() == "y":
             create_word_final_result(dao)
 
     shared_words = check_shared_words(word_datasets)

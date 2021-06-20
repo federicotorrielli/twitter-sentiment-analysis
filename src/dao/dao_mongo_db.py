@@ -1,8 +1,5 @@
 #!/usr/bin/python3
-import pprint
-
 import pymongo
-
 from src.file_manager import read_file
 
 
@@ -15,6 +12,12 @@ class DaoMongoDB:
         self.database = self.client.database
         self.word_numbers = {"anger": 0, "anticipation": 0, "disgust": 0, "fear": 0, "joy": 0, "sadness": 0,
                              "surprise": 0, "trust": 0}
+        self.std_definitions = {"anger": {}, "anticipation": {}, "disgust": {}, "fear": {}, "joy": {}, "sadness": {},
+                                "surprise": {}, "trust": {}}
+        self.slang_definitions = {"anger": {}, "anticipation": {}, "disgust": {}, "fear": {}, "joy": {}, "sadness": {},
+                                  "surprise": {}, "trust": {}}
+        self.frequencies = {"anger": {}, "anticipation": {}, "disgust": {}, "fear": {}, "joy": {}, "sadness": {},
+                            "surprise": {}, "trust": {}}
 
     def build_db(self, sentiments, words, emoticons, emojis, tweets):
         """
@@ -25,8 +28,10 @@ class DaoMongoDB:
         #  https://pymongo.readthedocs.io/en/stable/tutorial.html
 
         # First we drop everything, just to make sure
+        print("Dropping the previous database...")
         self.database.command('dropDatabase')
 
+        print("Inserting the tweets on the database...")
         for index, sentiment in enumerate(sentiments):
             tweet_document = self.database[f'{sentiment}_tweets']
             self.__insert_tweets(tweet_document, tweets[index], sentiment)
@@ -52,39 +57,21 @@ class DaoMongoDB:
             emoji_table.insert(emoji_datasets[index], check_keys=False)
             emoticon_table.insert(emoticon_datasets[index], check_keys=False)
 
-    def _easy_statement_exec(self, statement: str, params: [str]):
-        """
-        Given a statement and the parameters eventually needed, it execs the statement
-        @param statement:
-        @param params: parameters eventually needed inside the statement
-        @return: cursor
-        """
-        # TODO:
-
     def __get_collection(self, collection_name: str):
         return self.database[collection_name]
 
-    def find_count(self, word):
-        """
-        Given the word, it returns the count of it
-        @param word: the word or emoji you are trying to find
-        @return: the number of times that word appeared for every sentiment
-        """
+    def get_count(self, word) -> dict:
         sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
         final_list = {}
         for sentiment in sentiments:
-            collection = self.__get_collection(f"{sentiment}_words_frequency")
-            result = collection.find({}, {word: 1})[0]
-            if word in result:
-                final_list[sentiment] = result[word]
+            if len(self.frequencies[sentiment]) == 0:
+                self.frequencies[sentiment] = self.get_document(f"{sentiment}_words_frequency")
+
+            if word in self.frequencies[sentiment]:
+                final_list[sentiment] = self.frequencies[sentiment][word]
         return final_list
 
     def get_document(self, collection_name):
-        """
-        Given a collection name it returns the dict containing the document
-        @param collection_name: name of the mongo collection
-        @return: dict of the document
-        """
         return self.__get_collection(collection_name).find()[0]
 
     def test_db(self):
@@ -106,54 +93,52 @@ class DaoMongoDB:
         definition_document.insert(definitions)
 
     def get_definition(self, word: str, sentiment: str = "") -> str:
-        """
-        Gets the definition of the given word
-        @param word:
-        @param sentiment: optionally you can input a specific sentiment
-        @return: the definition
-        """
         if sentiment == "":
             sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
         else:
             sentiments = [sentiment]
         # If we don't define a sentiment, we cycle through them all
         for s in sentiments:
-            definition_document = self.database[f'standard_definitions_{s}']
-            slang_document = self.database[f'slang_definitions_{s}']
-            result1 = definition_document.find({}, {word: 1})[0]
-            result2 = slang_document.find({}, {word: 1})[0]
-            if word in result1:
-                return result1[word]
-            elif word in result2:
-                return result2[word]
-            else:
-                pass
+            if len(self.std_definitions[s]) == 0 or len(self.slang_definitions[s]) == 0:
+                self.std_definitions[s] = self.get_document(f'standard_definitions_{s}')
+                self.slang_definitions[s] = self.get_document(f'slang_definitions_{s}')
+
+            if word in self.std_definitions[s]:
+                return self.std_definitions[s][word]
+            if word in self.slang_definitions[s]:
+                return self.slang_definitions[s][word]
         return "NOTHING FOUND"
 
-    def push_result(self, word: str):
+    def push_result(self, word: str, count: dict, definition: str, popularity: dict):
         if word != "_id" and "." not in word and "$" not in word:
             results = self.__get_collection("results")
-            results.insert({
-                word: {
-                    "count": self.find_count(word),
-                    "definition": self.get_definition(word),
-                    "popularity": self.get_popularity(word)
-                }
+            results.insert_one({
+                "word": word,
+                "count": count,
+                "definition": definition,
+                "popularity": popularity
             })
 
-    def get_result(self, word: str):
+    def push_results(self, result_list):
         results = self.__get_collection("results")
-        word_result = results.find({}, {word: 1})[0]
-        if word in word_result:
-            return word_result[word]
-        else:
-            return {}
+        results.insert_many(result_list)
 
-    def get_popularity(self, word: str):
+    def get_result(self, word: str) -> dict:
+        results = self.__get_collection("results")
+        word_result = results.find_one({"word": word})
+        return word_result
+
+    def get_popularity(self, word: str, count=None):
+        if count is None:
+            count = self.get_count(word)
         sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
         final_list = {}
         for sentiment in sentiments:
-            if word in self.find_count(word)[sentiment]:
+            if sentiment in count:
                 final_list[sentiment] = \
-                    f"{self.find_count(word)[sentiment] / self.__get_word_numbers(sentiment)}%"
+                    f"{count[sentiment] / self.__get_word_numbers(sentiment)}%"
         return final_list
+
+    def create_index(self, index: str, table: str):
+        t = self.__get_collection(table)
+        t.create_index([(index, pymongo.ASCENDING)])

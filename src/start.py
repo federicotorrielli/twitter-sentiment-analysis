@@ -1,7 +1,9 @@
+from pprint import pprint
+from timeit import default_timer as timer
+
+from dao.dao import Dao
 from natural import quickstart
 from wordcloudgenerator import WordCloudCreator
-from dao.dao import Dao
-from timeit import default_timer as timer
 
 
 def start_comparison(db_type="MongoDB"):
@@ -21,9 +23,24 @@ def start_comparison(db_type="MongoDB"):
     return spec_dao
 
 
+def test_query(db_type="MongoDB"):
+    full_time = timer()
+    spec_dao = Dao(db_type != "MongoDB")
+    # Insert here a good number of queries
+    pprint(spec_dao.get_result("angry"))
+    pprint(spec_dao.get_result("sus"))
+    pprint(spec_dao.get_result("creepy"))
+    pprint(spec_dao.get_result("goku"))
+    pprint(spec_dao.get_result("!"))
+    pprint(spec_dao.get_result("frenzy"))
+    end = timer()
+    print(f"Done everything in {end - full_time} seconds")
+
+
 if __name__ == '__main__':
     dao = start_comparison("MongoDB")
     # dao2 = start_comparison("MySQL")
+    test_query()
 
     if input("Do you want to generate the Wordcloud(s)? This could take 10 minutes or more! [y/N] ").lower() == "y":
         wordcl = WordCloudCreator(dao)
