@@ -1,7 +1,8 @@
+from timeit import default_timer as timer
+
+from dao.dao import Dao
 from natural import quickstart
 from wordcloudgenerator import WordCloudCreator
-from dao.dao import Dao
-from timeit import default_timer as timer
 
 
 def start_comparison(db_type="MongoDB"):

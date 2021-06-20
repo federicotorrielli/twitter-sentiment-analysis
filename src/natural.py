@@ -8,10 +8,10 @@ from nltk import download
 from nltk.corpus import stopwords
 from nltk.tokenize import TweetTokenizer
 
+from dao.dao import Dao
 from file_manager import read_file
 from lexical_glob import get_lexical_filenames, get_lexical_Nlines
 from set_classification import negemoticons, posemoticons, twitter_stopwords
-from dao.dao import Dao
 from src.slang import create_definitions
 
 tokenizer = TweetTokenizer()
@@ -176,15 +176,22 @@ def calc_perc_sharedwords(shared_words, word_datasets):
 
 
 def create_word_final_result(dao):
+    start = timer()
     word_datasets = []
     sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
     for sentiment in sentiments:
         word_datasets.append(dao.get_document(f"{sentiment}_words_frequency"))
 
     for dataset in word_datasets:
+        if "_id" in dataset:
+            dataset.pop('_id')
         for value in dataset.keys():
             print(f"Creating result for word: {value}")
-            dao.push_result(value)
+            count = dao.get_count(value)
+            dao.push_result(value, count, dao.get_definition(value), dao.get_popularity(value, count))
+    dao.create_index('word', 'results')  # Index on the attribute "word" in the table results
+    end = timer()
+    print(f"Done creating the final results in {end - start} seconds")
 
 
 def quickstart(dao: Dao):

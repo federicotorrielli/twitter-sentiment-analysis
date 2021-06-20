@@ -51,10 +51,21 @@ class Dao:
         # TODO: do it in dao_mysql_db (see the mongo implementation)
         return self.dao_type.get_definition(word, sentiment)
 
-    def push_result(self, word: str):
+    def get_count(self, word: str):
+        # TODO: do it in dao_mysql_db (see the mongo implementation)
+        return self.dao_type.get_count(word)
+
+    def get_popularity(self, word: str, count: dict = None):
+        # TODO: do it in dao_mysql_db (see the mongo implementation)
+        return self.dao_type.get_popularity(word, count)
+
+    def push_result(self, word: str, count: dict, definition: str, popularity: dict):
         # TODO: do it in dao_mysql_db (see issue #10)
-        return self.dao_type.push_result(word)
+        return self.dao_type.push_result(word, count, definition, popularity)
 
     def get_result(self, word: str):
         # TODO: same
         return self.dao_type.get_result(word)
+    
+    def create_index(self, index: str, table: str):
+        self.dao_type.create_index(index, table)
