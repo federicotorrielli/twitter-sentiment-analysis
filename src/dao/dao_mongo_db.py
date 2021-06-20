@@ -16,6 +16,8 @@ class DaoMongoDB:
                                 "surprise": {}, "trust": {}}
         self.slang_definitions = {"anger": {}, "anticipation": {}, "disgust": {}, "fear": {}, "joy": {}, "sadness": {},
                                   "surprise": {}, "trust": {}}
+        self.frequencies = {"anger": {}, "anticipation": {}, "disgust": {}, "fear": {}, "joy": {}, "sadness": {},
+                            "surprise": {}, "trust": {}}
 
     def build_db(self, sentiments, words, emoticons, emojis, tweets):
         """
@@ -55,39 +57,21 @@ class DaoMongoDB:
             emoji_table.insert(emoji_datasets[index], check_keys=False)
             emoticon_table.insert(emoticon_datasets[index], check_keys=False)
 
-    def _easy_statement_exec(self, statement: str, params: [str]):
-        """
-        Given a statement and the parameters eventually needed, it execs the statement
-        @param statement:
-        @param params: parameters eventually needed inside the statement
-        @return: cursor
-        """
-        # TODO:
-
     def __get_collection(self, collection_name: str):
         return self.database[collection_name]
 
-    def get_count(self, word):
-        """
-        Given the word, it returns the count of it
-        @param word: the word or emoji you are trying to find
-        @return: the number of times that word appeared for every sentiment
-        """
+    def get_count(self, word) -> dict:
         sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
         final_list = {}
         for sentiment in sentiments:
-            collection = self.__get_collection(f"{sentiment}_words_frequency")
-            result = collection.find({}, {word: 1})[0]
-            if word in result:
-                final_list[sentiment] = result[word]
+            if len(self.frequencies[sentiment]) == 0:
+                self.frequencies[sentiment] = self.get_document(f"{sentiment}_words_frequency")
+
+            if word in self.frequencies[sentiment]:
+                final_list[sentiment] = self.frequencies[sentiment][word]
         return final_list
 
     def get_document(self, collection_name):
-        """
-        Given a collection name it returns the dict containing the document
-        @param collection_name: name of the mongo collection
-        @return: dict of the document
-        """
         return self.__get_collection(collection_name).find()[0]
 
     def test_db(self):
@@ -109,12 +93,6 @@ class DaoMongoDB:
         definition_document.insert(definitions)
 
     def get_definition(self, word: str, sentiment: str = "") -> str:
-        """
-        Gets the definition of the given word
-        @param word:
-        @param sentiment: optionally you can input a specific sentiment
-        @return: the definition
-        """
         if sentiment == "":
             sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
         else:
@@ -134,20 +112,21 @@ class DaoMongoDB:
     def push_result(self, word: str, count: dict, definition: str, popularity: dict):
         if word != "_id" and "." not in word and "$" not in word:
             results = self.__get_collection("results")
-            results.insert({
+            results.insert_one({
                 "word": word,
                 "count": count,
                 "definition": definition,
                 "popularity": popularity
             })
 
-    def get_result(self, word: str):
+    def push_results(self, result_list):
         results = self.__get_collection("results")
-        word_result = results.find({}, {word: 1})[0]
-        if word in word_result:
-            return word_result[word]
-        else:
-            return {}
+        results.insert_many(result_list)
+
+    def get_result(self, word: str) -> dict:
+        results = self.__get_collection("results")
+        word_result = results.find_one({"word": word})
+        return word_result
 
     def get_popularity(self, word: str, count=None):
         if count is None:

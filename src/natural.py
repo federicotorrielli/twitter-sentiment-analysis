@@ -182,13 +182,26 @@ def create_word_final_result(dao):
     for sentiment in sentiments:
         word_datasets.append(dao.get_document(f"{sentiment}_words_frequency"))
 
+    result_list = []
+    input_set = []
     for dataset in word_datasets:
-        if "_id" in dataset:
-            dataset.pop('_id')
-        for value in dataset.keys():
-            print(f"Creating result for word: {value}")
-            count = dao.get_count(value)
-            dao.push_result(value, count, dao.get_definition(value), dao.get_popularity(value, count))
+        input_set += dataset
+    input_set = set(input_set)
+
+    if "_id" in input_set:
+        input_set.remove("_id")
+    for value in input_set:
+        print(f"Creating result for word: {value}")
+        count = dao.get_count(value)
+        result_list.append(
+            {
+                "word": value,
+                "count": count,
+                "definition": dao.get_definition(value),
+                "popularity": dao.get_popularity(value)
+            }
+        )
+    dao.push_results(result_list)
     dao.create_index('word', 'results')  # Index on the attribute "word" in the table results
     end = timer()
     print(f"Done creating the final results in {end - start} seconds")
@@ -228,7 +241,7 @@ def quickstart(dao: Dao):
 
     if input("Do you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
         create_definitions(word_datasets, dao)
-        if input("Do you want to create results for the words? (this can take up to 45 minutes) [y/N] ").lower() == "y":
+        if input("Do you want to create results for the words? [y/N] ").lower() == "y":
             create_word_final_result(dao)
 
     shared_words = check_shared_words(word_datasets)
