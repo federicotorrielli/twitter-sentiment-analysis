@@ -24,8 +24,8 @@ def get_sentiment_tweets():
     surprise_dataset = glob(f"{root}/Resources/tweets/dataset_dt_surprise_60k.txt")
     trust_dataset = glob(f"{root}/Resources/tweets/dataset_dt_trust_60k.txt")
 
-    return [anger_dataset, anticipation_dataset, disgust_dataset, fear_dataset, joy_dataset, sadness_dataset,
-            surprise_dataset, trust_dataset]
+    return [anger_dataset[0], anticipation_dataset[0], disgust_dataset[0], fear_dataset[0], joy_dataset[0],
+            sadness_dataset[0], surprise_dataset[0], trust_dataset[0]]
 
 
 def get_sentiment_words():
@@ -37,14 +37,15 @@ def get_sentiment_words():
     for files in get_lexical_filenames():
         for file in files:
             for word in read_file(file).splitlines():
-                words_list.append(word)
+                if not ('$' in word or '.' in word):
+                    words_list.append(word)
 
     word_sentiments = {word.lower(): [] for word in sorted(list(dict.fromkeys(words_list)))}
 
     for index, files in enumerate(get_lexical_filenames()):
         for file in files:
             for word in read_file(file).splitlines():
-                if index not in word_sentiments[f"{word.lower()}"]:
+                if word.lower() in word_sentiments and index not in word_sentiments[f"{word.lower()}"]:
                     word_sentiments[f"{word.lower()}"] += [index]
     return word_sentiments
 
@@ -67,4 +68,3 @@ def get_sentiment_emojis():
     return {'positive': [emoji for emoji in set(EmojiPos)],
             'negative': [emoji for emoji in set(EmojiNeg)],
             'other': [emoji for emoji in set(OthersEmoji + list(emoji_list - set(EmojiPos) - set(EmojiNeg)))]}
-

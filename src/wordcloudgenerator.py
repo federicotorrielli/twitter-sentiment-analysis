@@ -10,36 +10,20 @@ from src.file_manager import get_project_root
 
 
 class WordCloudCreator:
-    def __init__(self, wordlist: [], emoji_list: [], emoticon_list: []):
-        self.wordlist = wordlist
-        self.emoji_list = emoji_list
-        self.emoticon_list = emoticon_list
+    def __init__(self, dao):
+        self.dao = dao
 
     def generate(self):
-        self.__generate_emotion_plot(dict(self.wordlist[0]), 'anger')
-        self.__generate_emotion_plot(dict(self.wordlist[1]), 'anticipation')
-        self.__generate_emotion_plot(dict(self.wordlist[2]), 'disgust')
-        self.__generate_emotion_plot(dict(self.wordlist[3]), 'fear')
-        self.__generate_emotion_plot(dict(self.wordlist[4]), 'joy')
-        self.__generate_emotion_plot(dict(self.wordlist[5]), 'sadness')
-        self.__generate_emotion_plot(dict(self.wordlist[6]), 'surprise')
-        self.__generate_emotion_plot(dict(self.wordlist[7]), 'trust')
-        self.__generate_emotion_plot(dict(self.emoji_list[0]), 'anger_emoji', extension='png', emoji=True)
-        self.__generate_emotion_plot(dict(self.emoji_list[1]), 'anticipation_emoji', emoji=True)
-        self.__generate_emotion_plot(dict(self.emoji_list[2]), 'disgust_emoji', emoji=True)
-        self.__generate_emotion_plot(dict(self.emoji_list[3]), 'fear_emoji', extension='png', emoji=True)
-        self.__generate_emotion_plot(dict(self.emoji_list[4]), 'joy_emoji', emoji=True)
-        self.__generate_emotion_plot(dict(self.emoji_list[5]), 'sadness_emoji', emoji=True)
-        self.__generate_emotion_plot(dict(self.emoji_list[6]), 'surprise_emoji', emoji=True)
-        self.__generate_emotion_plot(dict(self.emoji_list[7]), 'trust_emoji', emoji=True)
-        self.__generate_emoticon_plot(dict(self.emoticon_list[0]), 'anger')
-        self.__generate_emoticon_plot(dict(self.emoticon_list[1]), 'anticipation')
-        self.__generate_emoticon_plot(dict(self.emoticon_list[2]), 'disgust')
-        self.__generate_emoticon_plot(dict(self.emoticon_list[3]), 'fear')
-        self.__generate_emoticon_plot(dict(self.emoticon_list[4]), 'joy')
-        self.__generate_emoticon_plot(dict(self.emoticon_list[5]), 'sadness')
-        self.__generate_emoticon_plot(dict(self.emoticon_list[6]), 'surprise')
-        self.__generate_emoticon_plot(dict(self.emoticon_list[7]), 'trust')
+        emotions = ['anger', 'anticipation', 'disgust', 'fear', 'joy', 'sadness', 'surprise', 'trust']
+        for emotion in emotions:
+            self.__generate_emotion_plot(self.dao.get_document(f'{emotion}_words_frequency'), f'{emotion}')
+            if emotion == 'anger' or emotion == 'fear':
+                self.__generate_emotion_plot(self.dao.get_document(f'{emotion}_emoji_frequency'), f'{emotion}_emoji',
+                                             emoji=True, extension='png')
+            else:
+                self.__generate_emotion_plot(self.dao.get_document(f'{emotion}_emoji_frequency'), f'{emotion}_emoji',
+                                             emoji=True)
+            self.__generate_emoticon_plot(self.dao.get_document(f'{emotion}_emoticon_frequency'), f'{emotion}')
 
     def __preprocess_wordlist(self, wordlist):
         [wordlist.pop(key) for key in self.__get_stopwords() if key in wordlist]
@@ -50,6 +34,9 @@ class WordCloudCreator:
         return list(STOPWORDS.union(set(string.punctuation))) + ['..', '...']
 
     def __generate_emotion_plot(self, wordlist, emotion: str, extension="jpg", emoji=False):
+        if '_id' in wordlist:
+            # We pop _id from tweets because in the case of MongoDB we cannot iterate
+            wordlist.pop('_id')
         print(f"Creating the image for emotion: {emotion}")
         start = timer()
         colored_image = np.array(Image.open(f"{get_project_root()}/Resources/images/{emotion}.{extension}"))
@@ -79,6 +66,9 @@ class WordCloudCreator:
 
     @staticmethod
     def __generate_emoticon_plot(emoticon_list, emotion: str):
+        if '_id' in emoticon_list:
+            # We pop _id from tweets because in the case of MongoDB we cannot iterate
+            emoticon_list.pop('_id')
         print(f"Creating the image for emotion-emoticon: {emotion}")
         start = timer()
         wordobject = WordCloud(background_color='black',
