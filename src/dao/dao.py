@@ -58,3 +58,11 @@ class Dao:
     def get_result(self, word: str):
         # TODO: same
         return self.dao_type.get_result(word)
+
+
+if __name__ == '__main__':
+    """ 
+    Tests
+    """
+    db = Dao(True)  # True value: MySQL
+    db.build_db()  # TODO: check input inside the func

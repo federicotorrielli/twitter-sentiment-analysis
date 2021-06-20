@@ -60,7 +60,7 @@ class DaoMySQLDB:
         # self.__insert_emojis(emojis)
 
         # print("Adding tweets")
-        self.insert_tweets(tweets)
+        # self.insert_tweets(tweets)
 
     def __drop_and_create_tables(self):
         """
@@ -132,7 +132,7 @@ class DaoMySQLDB:
                 _execute_statement(cursor, "CREATE TABLE `belongs_to` ("
                                            "`sentiment_id` int NOT NULL,"
                                            "`word_id` int NOT NULL,"
-                                           "`perc` float NOT NULL,"
+                                           "`perc_freq` float NOT NULL DEFAULT 0,"
                                            "PRIMARY KEY(`sentiment_id`,`word_id`),"
                                            "FOREIGN KEY (`word_id`) REFERENCES `word` (`id`) "
                                            "ON DELETE CASCADE ON UPDATE CASCADE,"
