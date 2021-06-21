@@ -25,7 +25,7 @@ def create_definitions(datasets: [], dao: Dao):
         definitions_dict = {}
 
         for word, count in sentiment.items():
-            if not word == "true" and not word == "false" and not word == "_id"\
+            if not word == "true" and not word == "false" and not word == "_id" \
                     and "." not in word and "$" not in word:
                 definition = check_word_existence(word, standard_toml_files)
                 if definition == "":
@@ -66,12 +66,14 @@ def get_slang_definition(word):
     """
     response = get(f"https://api.urbandictionary.com/v0/define?term={word}")
     response.encoding = 'utf-8'
+    good_definition = {"definition": "", "count": 0}
     if response.ok:
         text = response.json()
         if 'list' in text:
-            if len(text['list']) > 0:
-                return text['list'][0]['definition']
-    return ""
+            for elem in text['list']:
+                if elem['thumbs_up'] > elem['thumbs_down'] and good_definition['count'] < elem['thumbs_up']:
+                    good_definition = {"definition": elem['definition'], "count": elem['thumbs_up']}
+    return good_definition["definition"]
 
 
 def get_dictionary_definition(word):
