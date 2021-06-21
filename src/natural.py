@@ -240,7 +240,8 @@ def quickstart(dao: Dao):
     dao.build_sentiments(word_datasets, emoji_datasets, emoticons_datasets)
 
     if input("Do you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
-        create_definitions(word_datasets, dao)
+        # create_definitions(word_datasets, dao)
+        create_definitions(word_datasets)
         if input("Do you want to create results for the words? [y/N] ").lower() == "y":
             create_word_final_result(dao)
 

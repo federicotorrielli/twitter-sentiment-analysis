@@ -37,7 +37,7 @@ def get_sentiment_words():
     for files in get_lexical_filenames():
         for file in files:
             for word in read_file(file).splitlines():
-                if not ('$' in word or '.' in word):
+                if not ('$' in word or '.' in word or '_' in word):
                     words_list.append(word)
 
     word_sentiments = {word.lower(): [] for word in sorted(list(dict.fromkeys(words_list)))}
