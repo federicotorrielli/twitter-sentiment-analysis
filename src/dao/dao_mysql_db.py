@@ -279,6 +279,8 @@ class DaoMySQLDB:
                     if definition == "":
                         definition = check_word_existence(word, slang_toml_files)
                         is_slang = definition != ""
+                        definition = "NOTHING FOUND" if definition == "" else definition
+
                     definition = (definition[:1021] + '...') if len(definition) > 1024 else definition
 
                     _execute_statement(cursor, sql_word, [word, is_slang, definition])
@@ -336,3 +338,13 @@ class DaoMySQLDB:
                     connection.commit()
                 _execute_statement(cursor, sql_assign_sentiment, sql_assign_sentiment_params)
                 connection.commit()
+
+    def get_definition(self, word: str, sentiment: str = "") -> str:
+        """
+        Given a word it returns the correct definition, given that
+        it is already stored on the database
+        @param word: the word to search the definition for
+        @param sentiment: not needed
+        @return: the definition of the word
+        """
+        # TODO:

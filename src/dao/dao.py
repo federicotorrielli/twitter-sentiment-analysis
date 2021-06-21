@@ -22,7 +22,6 @@ class Dao:
         """
         Builds the DB
         """
-        # TODO: do it in dao_mysql_db
         self.dao_type.build_db(self.sentiments, get_sentiment_words(), get_sentiment_emoticons(),
                                get_sentiment_emojis(), get_sentiment_tweets())
 
@@ -34,7 +33,7 @@ class Dao:
         @param collection_name:
         @return:
         """
-        # TODO: do it in dao_mysql_db
+        # TODO: do it in dao_mysql_db (?)
         # TODO: complete comment
         return self.dao_type.get_document(collection_name)
 
@@ -45,7 +44,7 @@ class Dao:
         @param emoji_datasets: a list of dicts for every emoji_frequency sentiment
         @param emoticon_datasets: a list of dicts for every emoticon_frequency sentiment
         """
-        # TODO: do it in dao_mysql_db
+        # TODO: do it in dao_mysql_db (?)
         self.dao_type.build_sentiments(self.sentiments, word_datasets, emoji_datasets, emoticon_datasets)
 
     def dump_definitions(self, definitions: dict, name: str):
@@ -54,7 +53,7 @@ class Dao:
         @param definitions: a dict containing tuples {word: definition}
         @param name: the name of the table/document to put it in
         """
-        # TODO: do it in dao_mysql_db (see the mongo implementation)
+        # TODO: do it in dao_mysql_db (see the mongo implementation) (already done in build_db)
         self.dao_type.dump_definitions(definitions, name)
 
     def get_definition(self, word: str, sentiment: str = "") -> str:
