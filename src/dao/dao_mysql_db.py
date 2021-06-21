@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import sys
+
 import pymysql
 from pymysql import MySQLError
 from toml import load

@@ -176,6 +176,11 @@ def calc_perc_sharedwords(shared_words, word_datasets):
 
 
 def create_word_final_result(dao):
+    """
+    Creates the final result dict
+    @param dao: the dao
+    @return:  the final result dict
+    """
     start = timer()
     word_datasets = []
     sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]

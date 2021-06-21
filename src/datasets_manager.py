@@ -40,11 +40,12 @@ def get_sentiment_words():
                 if not ('$' in word or '.' in word or '_' in word):
                     words_list.append(word)
 
-    word_sentiments = {word.lower(): [] for word in sorted(list(dict.fromkeys(words_list)))}
+    word_sentiments = {word.lower().replace("_", " "): [] for word in sorted(list(dict.fromkeys(words_list)))}
 
     for index, files in enumerate(get_lexical_filenames()):
         for file in files:
             for word in read_file(file).splitlines():
+                word = word.replace("_", " ")
                 if word.lower() in word_sentiments and index not in word_sentiments[f"{word.lower()}"]:
                     word_sentiments[f"{word.lower()}"] += [index]
     return word_sentiments
@@ -68,3 +69,7 @@ def get_sentiment_emojis():
     return {'positive': [emoji for emoji in set(EmojiPos)],
             'negative': [emoji for emoji in set(EmojiNeg)],
             'other': [emoji for emoji in set(OthersEmoji + list(emoji_list - set(EmojiPos) - set(EmojiNeg)))]}
+
+
+if __name__ == '__main__':
+    print(get_sentiment_words())
