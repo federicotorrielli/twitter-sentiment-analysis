@@ -19,9 +19,14 @@ class DaoMongoDB:
         self.frequencies = {"anger": {}, "anticipation": {}, "disgust": {}, "fear": {}, "joy": {}, "sadness": {},
                             "surprise": {}, "trust": {}}
 
-    def build_db(self, sentiments, words, emoticons, emojis, tweets):
+    def build_db(self, sentiments, words, emoticons, emojis, twitter_paths):
         """
         Builds all tables of mongodb
+        @param sentiments: list of sentiments
+        @param words: set with words as keys and list of sentiments ids as values
+        @param emoticons: set with polarity as keys and list of emoticons as values
+        @param emojis: set with polarity as keys and list of emoji as values
+        @param twitter_paths: list of file paths that contains tweets
         """
         # TODO: build the db from the ground up >
         #  https://docs.atlas.mongodb.com/tutorial/insert-data-into-your-cluster/ and
@@ -34,7 +39,8 @@ class DaoMongoDB:
         print("Inserting the tweets on the database...")
         for index, sentiment in enumerate(sentiments):
             tweet_document = self.database[f'{sentiment}_tweets']
-            self.__insert_tweets(tweet_document, tweets[index], sentiment)
+            self.__insert_tweets(tweet_document, twitter_paths[index], sentiment)
+            # TODO: add words to correct sentiment
             word_document = self.database[f'{sentiment}_words']
             word_document.insert(words)
             emoji_document = self.database[f'{sentiment}_emoji']

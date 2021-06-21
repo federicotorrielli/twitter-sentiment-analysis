@@ -3,6 +3,7 @@ from src.dao.dao_mongo_db import DaoMongoDB
 from src.dao.dao_mysql_db import DaoMySQLDB
 from src.datasets_manager import get_sentiment_words, get_sentiment_emoticons, get_sentiment_emojis, \
     get_sentiment_tweets
+from timeit import default_timer as timer
 
 
 class Dao:
@@ -21,6 +22,7 @@ class Dao:
         """
         Builds the DB
         """
+        # TODO: do it in dao_mysql_db
         self.dao_type.build_db(self.sentiments, get_sentiment_words(), get_sentiment_emoticons(),
                                get_sentiment_emojis(), get_sentiment_tweets())
 
@@ -29,8 +31,11 @@ class Dao:
         Gets the dict of tweets of type {sentiment_number: "tweet"}
         where the number is monotonic and generated during the building
         of the database
+        @param collection_name:
+        @return:
         """
         # TODO: do it in dao_mysql_db
+        # TODO: complete comment
         return self.dao_type.get_document(collection_name)
 
     def build_sentiments(self, word_datasets, emoji_datasets, emoticon_datasets):
@@ -123,3 +128,15 @@ class Dao:
         """
         # TODO: do it in dao_mysql_db
         self.dao_type.create_index(index, table)
+
+
+if __name__ == '__main__':
+    """ 
+    Tests
+    """
+    db_type = True  # True value: MySQL
+    start = timer()
+    db = Dao(db_type)
+    db.build_db()
+    end = timer()
+    print(f"Done {db_type} in {end - start} seconds")
