@@ -31,7 +31,7 @@ class DaoMongoDB:
             tweet_document = self.database[f'{sentiment}_tweets']
             self.__insert_tweets(tweet_document, tweets[index], sentiment)
             word_document = self.database[f'{sentiment}_words']
-            word_document.insert(words)
+            self.__insert_words(word_document, words, index)
             emoji_document = self.database[f'{sentiment}_emoji']
             emoji_document.insert(emojis)
             emoticon_document = self.database[f'{sentiment}_emoticons']
@@ -44,6 +44,13 @@ class DaoMongoDB:
 
     def __get_collection_address(self, collection_name: str):
         return self.database[collection_name]
+
+    def __insert_words(self, word_document, words, sentiment):
+        words_to_add = {}
+        for word, sentiments in words.items():
+            if sentiment in sentiments:
+                words_to_add[word] = sentiments
+        word_document.insert(words_to_add)
 
     def __insert_tweets(self, tweet_document, file_path, sentiment):
         file = read_file(file_path)
