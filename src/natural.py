@@ -216,8 +216,8 @@ def quickstart(dao: Dao):
     """
     Quick start of the dataset sentiment analysis.
     """
-    download('punkt')
-    download('stopwords')
+    download('punkt')  # Scarica la punteggiatura dal server di nltk (one-time)
+    download('stopwords')  # Scarica l'elenco di stopwords dal server di nltk (one-time)
 
     anger_words, anger_hashtags, anger_emojis, anger_emoticons = \
         process_dataset(dao.get_tweets('anger'), 'anger_tweets')
@@ -245,8 +245,7 @@ def quickstart(dao: Dao):
     dao.build_sentiments(word_datasets, emoji_datasets, emoticons_datasets)
 
     if input("Do you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
-        # create_definitions(word_datasets, dao)
-        create_definitions(word_datasets)
+        create_definitions(word_datasets, dao)
         if input("Do you want to create results for the words? [y/N] ").lower() == "y":
             create_word_final_result(dao)
 

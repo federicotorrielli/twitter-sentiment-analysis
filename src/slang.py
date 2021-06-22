@@ -2,10 +2,10 @@ import glob
 
 from requests import get
 
-from src.file_manager import get_project_root, dump_toml, read_toml
+from src.file_manager import dump_toml, get_project_root, read_toml
 
 
-def create_definitions(datasets: []):
+def create_definitions(datasets: [], dao):
     """
     Foreach Plutchik emotion, it finds words definition from datasets and
     it writes them to toml files.
@@ -52,9 +52,8 @@ def create_definitions(datasets: []):
         dump_toml(f"{get_project_root()}/Resources/definitions/standard_definitions_{dataset_name}.toml",
                   definitions_dict)
         dump_toml(f"{get_project_root()}/Resources/definitions/slang_definitions_{dataset_name}.toml", slang_dict)
-        # TODO: do not dump definition here (circular import and it is not the goal of the func comment)
-        # dao.dump_definitions(definitions_dict, f"standard_definitions_{dataset_name}")
-        # dao.dump_definitions(slang_dict, f"slang_definitions_{dataset_name}")
+        dao.dump_definitions(definitions_dict, f"standard_definitions_{dataset_name}")
+        dao.dump_definitions(slang_dict, f"slang_definitions_{dataset_name}")
         i = i + 1
 
 

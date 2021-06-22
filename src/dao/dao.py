@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 from src.dao.dao_mongo_db import DaoMongoDB
 from src.dao.dao_mysql_db import DaoMySQLDB
-from src.datasets_manager import get_sentiment_words, get_sentiment_emoticons, get_sentiment_emojis, \
-    get_sentiment_tweets
-from timeit import default_timer as timer
+from src.datasets_manager import (get_sentiment_emojis,
+                                  get_sentiment_emoticons,
+                                  get_sentiment_tweets, get_sentiment_words)
 
 
 class Dao:
@@ -49,9 +49,9 @@ class Dao:
     def build_sentiments(self, word_datasets, emoji_datasets, emoticon_datasets):
         """
         Puts in the db the different datasets built in natural
-        @param word_datasets: a list of dicts for every word_frequency sentiment
-        @param emoji_datasets: a list of dicts for every emoji_frequency sentiment
-        @param emoticon_datasets: a list of dicts for every emoticon_frequency sentiment
+        @param word_datasets: a list of dicts for every word_count sentiment
+        @param emoji_datasets: a list of dicts for every emoji_count sentiment
+        @param emoticon_datasets: a list of dicts for every emoticon_count sentiment
         """
         # TODO: do it in dao_mysql_db
         self.dao_type.build_sentiments(self.sentiments, word_datasets, emoji_datasets, emoticon_datasets)
@@ -74,9 +74,7 @@ class Dao:
         @param sentiment: (optional) the sentiment to search it for
         @return: the definition of the word
         """
-        word = word.lower()
-        sentiment = sentiment.lower()
-        return self.dao_type.get_definition(word, sentiment)
+        return self.dao_type.get_definition(word.lower(), sentiment.lower())
 
     def get_count(self, word: str) -> dict:
         """
@@ -84,8 +82,7 @@ class Dao:
         @param word: the word or emoji you are trying to find
         @return: the number of times that word appeared for every sentiment (a dict)
         """
-        word = word.lower()
-        return self.dao_type.get_count(word)
+        return self.dao_type.get_count(word.lower())
 
     def get_popularity(self, word: str, count: dict = None) -> dict:
         """
@@ -97,8 +94,7 @@ class Dao:
         @param count: the count dict, see get_count(...)
         @return: a dict of all the percentages for every sentiment
         """
-        word = word.lower()
-        return self.dao_type.get_popularity(word, count)
+        return self.dao_type.get_popularity(word.lower(), count)
 
     def push_result(self, word: str, count: dict, definition: str, popularity: dict):
         """
