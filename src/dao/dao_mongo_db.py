@@ -154,3 +154,11 @@ class DaoMongoDB:
     def push_results(self, result_list):
         results = self.__get_collection_address("results")
         results.insert_many(result_list)
+
+    def get_tokens(self, token_type: str):
+        """
+        Gets all tokens of type
+        @param token_type: possibile values "word", "emoji" or "emoticon"
+        @return: dict {"token": id}
+        """
+        # TODO:

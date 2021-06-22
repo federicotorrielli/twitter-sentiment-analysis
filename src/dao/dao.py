@@ -37,7 +37,7 @@ class Dao:
 
     def get_counts(self, collection_name, token_type: str = ""):
         """
-        Gets the dict of frequencies of type {item: count}
+        Gets the dict of count of type {item: count}
         where the number is monotonic and generated during the building
         of the database
         @param collection_name: document name
@@ -53,17 +53,14 @@ class Dao:
         @param emoji_datasets: a list of dicts for every emoji_frequency sentiment
         @param emoticon_datasets: a list of dicts for every emoticon_frequency sentiment
         """
-        # TODO: do it in dao_mysql_db
         self.dao_type.build_sentiments(self.sentiments, word_datasets, emoji_datasets, emoticon_datasets)
 
-    def dump_definitions(self, definitions: dict, name: str):
+    def dump_definitions(self, definitions: dict = {}, name: str = ""):
         """
         Dumps all the definitions in the correct @name table/document
-        @param definitions: a dict containing tuples {word: definition}
-        @param name: the name of the table/document to put it in
+        @param definitions: a dict containing tuples {word: definition}, not needed in MySQL
+        @param name: the name of the table/document to put it in, not needed in MySQL
         """
-        # TODO: do it in dao_mysql_db (see the mongo implementation)
-        #  (already done in build_db, if we do it in 2 phases it'll be so slow)
         self.dao_type.dump_definitions(definitions, name)
 
     def get_definition(self, word: str, sentiment: str = "") -> str:
@@ -74,9 +71,7 @@ class Dao:
         @param sentiment: (optional) the sentiment to search it for
         @return: the definition of the word
         """
-        word = word.lower()
-        sentiment = sentiment.lower()
-        return self.dao_type.get_definition(word, sentiment)
+        return self.dao_type.get_definition(word.lower(), sentiment.lower())
 
     def get_count(self, word: str) -> dict:
         """
@@ -84,8 +79,7 @@ class Dao:
         @param word: the word or emoji you are trying to find
         @return: the number of times that word appeared for every sentiment (a dict)
         """
-        word = word.lower()
-        return self.dao_type.get_count(word)
+        return self.dao_type.get_count(word.lower())
 
     def get_popularity(self, word: str, count: dict = None) -> dict:
         """
@@ -97,8 +91,7 @@ class Dao:
         @param count: the count dict, see get_count(...)
         @return: a dict of all the percentages for every sentiment
         """
-        word = word.lower()
-        return self.dao_type.get_popularity(word, count)
+        return self.dao_type.get_popularity(word.lower(), count)
 
     def push_result(self, word: str, count: dict, definition: str, popularity: dict):
         """
@@ -110,7 +103,7 @@ class Dao:
         """
         # TODO: do it in dao_mysql_db (see issue #10)
         #  there's already the word definition in the db (?), line 50
-        self.dao_type.push_result(word, count, definition, popularity)
+        self.dao_type.push_result(word.lower(), count, definition, popularity)
 
     def push_results(self, result_list: []):
         """
@@ -129,7 +122,16 @@ class Dao:
         @return: the result dict
         """
         # TODO: do it in dao_mysql_db
-        return self.dao_type.get_result(word)
+        return self.dao_type.get_result(word.lower())
+
+    def get_tokens(self, token_type: str):
+        """
+        Gets all tokens of type
+        @param token_type: possibile values "word", "emoji" or "emoticon"
+        @return: dict {"token": id}
+        """
+        # TODO: do it in dao_mongo_db (?)
+        return self.dao_type.get_tokens(token_type)
 
     def create_index(self, index: str, table: str):
         """
@@ -146,22 +148,27 @@ if __name__ == '__main__':
     Tests
     """
     word = "Hello"
-    # db_type = True  # True value: MySQL
-    # start = timer()
-    # db = Dao(db_type)
-    # # db.build_db()
+    db_type = True  # True value: MySQL
+    start = timer()
+    db = Dao(db_type)
+    # db.build_db()
+    # db.dump_definitions()
+    print(db.get_tokens("word"))
+    print(db.get_tokens("emoji"))
+    print(db.get_tokens("emoticon"))
     # print(db.get_definition(word))
     # print(db.get_count(word))
     # print(db.get_popularity("Hello"))
-    # end = timer()
-    # print(f"Done in {end - start} seconds")
+    end = timer()
+    print(f"Done in {end - start} seconds")
 
     # db_type = False  # False value: MongoDB
     # start = timer()
     # db = Dao(db_type)
     # # db.build_db()
-    # print(db.get_definition(word))
-    # print(db.get_count(word))
-    # print(db.get_popularity(word))
+    # print(db.get_result("hello"))
+    # # print(db.get_definition(word))
+    # # print(db.get_count(word))
+    # # print(db.get_popularity(word))
     # end = timer()
     # print(f"Done in {end - start} seconds")
