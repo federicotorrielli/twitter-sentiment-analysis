@@ -11,7 +11,8 @@ def start_comparison(db_type="MongoDB"):
     print(f"Building {db_type}...")
     start = timer()
     spec_dao = Dao(db_type != "MongoDB")
-    spec_dao.build_db()
+    # TODO: decomment build_db
+    # spec_dao.build_db()
     end = timer()
     print(f"Done building {db_type} in {end - start} seconds")
 
@@ -38,8 +39,8 @@ def test_query(db_type="MongoDB"):
 
 
 if __name__ == '__main__':
-    dao = start_comparison("MongoDB")
-    # dao2 = start_comparison("MySQL")
+    # dao = start_comparison("MongoDB")
+    dao2 = start_comparison("MySQL")
     test_query()
 
     if input("Do you want to generate the Wordcloud(s)? This could take 10 minutes or more! [y/N] ").lower() == "y":
