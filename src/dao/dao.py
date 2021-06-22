@@ -121,7 +121,6 @@ class Dao:
         @param word: the word to get the result dict from
         @return: the result dict
         """
-        # TODO: do it in dao_mysql_db
         return self.dao_type.get_result(word.lower())
 
     def get_tokens(self, token_type: str):
@@ -151,11 +150,11 @@ if __name__ == '__main__':
     db_type = True  # True value: MySQL
     start = timer()
     db = Dao(db_type)
-    # db.build_db()
-    # db.dump_definitions()
-    print(db.get_tokens("word"))
-    print(db.get_tokens("emoji"))
-    print(db.get_tokens("emoticon"))
+    db.build_db()
+    db.dump_definitions()
+    # print(db.get_tokens("word"))
+    # print(db.get_tokens("emoji"))
+    # print(db.get_tokens("emoticon"))
     # print(db.get_definition(word))
     # print(db.get_count(word))
     # print(db.get_popularity("Hello"))

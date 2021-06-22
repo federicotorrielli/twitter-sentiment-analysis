@@ -204,7 +204,7 @@ class DaoMySQLDB:
                 _execute_statement(cursor, "CREATE TABLE `word_in_tweet` ("
                                            "`tweet_id` int NOT NULL, "
                                            "`token_id` int NOT NULL,"
-                                           "`type` SET('word','emoji','emoticon') NOT NULL,"
+                                           "`count` int NOT NULL DEFAULT -1,"
                                            "PRIMARY KEY(`tweet_id`,`token_id`),"
                                            "FOREIGN KEY (`token_id`) REFERENCES `word` (`id`) "
                                            "ON DELETE CASCADE ON UPDATE CASCADE,"
@@ -215,7 +215,7 @@ class DaoMySQLDB:
                 _execute_statement(cursor, "CREATE TABLE `emoticon_in_tweet` ("
                                            "`tweet_id` int NOT NULL, "
                                            "`token_id` int NOT NULL,"
-                                           "`type` SET('word','emoji','emoticon') NOT NULL,"
+                                           "`count` int NOT NULL DEFAULT -1,"
                                            "PRIMARY KEY(`tweet_id`,`token_id`),"
                                            "FOREIGN KEY (`token_id`) REFERENCES `emoticon` (`id`) "
                                            "ON DELETE CASCADE ON UPDATE CASCADE,"
@@ -226,7 +226,7 @@ class DaoMySQLDB:
                 _execute_statement(cursor, "CREATE TABLE `emoji_in_tweet` ("
                                            "`tweet_id` int NOT NULL, "
                                            "`token_id` int NOT NULL,"
-                                           "`type` SET('word','emoji','emoticon') NOT NULL,"
+                                           "`count` int NOT NULL DEFAULT -1,"
                                            "PRIMARY KEY(`tweet_id`,`token_id`),"
                                            "FOREIGN KEY (`token_id`) REFERENCES `emoji` (`id`) "
                                            "ON DELETE CASCADE ON UPDATE CASCADE,"
@@ -508,7 +508,6 @@ class DaoMySQLDB:
         @param token_type: possibile values "word", "emoji" or "emoticon"
         @return: dict {"token": id}
         """
-        # TODO: test
         token_type = token_type.lower()
         tokens = {}
         with self.__connect_db() as connection:
@@ -519,6 +518,83 @@ class DaoMySQLDB:
                 for t in cursor.fetchall():
                     tokens[t[f"{token_type}"]] = t["id"]
         return tokens
+
+    def add_tweets_tokens(self, tweets_tokens: {}):
+        """
+        Inserts the connection between tweets and tokens
+        @param tweets_tokens: {tweet_id: [tokens]...}
+        """
+        # TODO: remove symbols and what is not a token we need
+        # TODO: manage new tokens
+        list_word = self.get_tokens("word")
+        list_emoji = self.get_tokens("emoji")
+        list_emoticon = self.get_tokens("emoticon")
+
+        # data_token = {tweet_id: {token_id: count,...},...}
+        data_word = {}
+        data_emoji = {}
+        data_emoticon = {}
+
+        for tweet_id in tweets_tokens:
+            for token in tweets_tokens[tweet_id]:
+                token = token.lower()
+                if token in list_word:
+                    if tweet_id not in data_word or list_word[token] not in data_word[tweet_id]:
+                        if tweet_id not in data_word:
+                            data_word[tweet_id] = {}
+                        data_word[tweet_id][list_word[token]] = 1
+                    else:
+                        data_word[tweet_id][list_word[token]] += 1
+
+                elif token in list_emoji:
+                    if tweet_id not in data_emoji or list_emoji[token] not in data_emoji[tweet_id]:
+                        if tweet_id not in data_emoji:
+                            data_emoji[tweet_id] = {}
+                        data_emoji[tweet_id][list_emoji[token]] = 1
+                    else:
+                        data_emoji[tweet_id][list_emoji[token]] += 1
+
+                elif token in list_emoticon:
+                    if tweet_id not in data_emoticon or list_emoticon[token] not in data_emoticon[tweet_id]:
+                        if tweet_id not in data_emoticon:
+                            data_emoticon[tweet_id] = {}
+                        data_emoticon[tweet_id][list_emoticon[token]] = 1
+                    else:
+                        data_emoticon[tweet_id][list_emoticon[token]] += 1
+
+        data_to_insert = {
+            "word": data_word,
+            "emoji": data_emoji,
+            "emoticon": data_emoticon
+        }
+        # TODO: move the func to natural and call dao.insert_tweets_tokens(data_to_insert)
+        self.insert_tweets_tokens(data_to_insert)
+
+    def insert_tweets_tokens(self, data_to_insert: {}):
+        """
+        Inserts the connection between tweets and tokens
+        @param data_to_insert: {token_type: {tweet_id: {token_id: count,...},...},...}
+        """
+        with self.__connect_db() as connection:
+            with connection.cursor() as cursor:
+
+                for token_type in data_to_insert:
+                    if len(data_to_insert[token_type]) > 0:
+                        sql = f"INSERT INTO `{token_type}_in_tweet` " \
+                              f"(`tweet_id`, `token_id`, `count`) VALUES (%s, %s, %s)"
+                        sql_params = []
+                        first_insert = True
+                        for tweet_id in data_to_insert[token_type]:
+                            for token_id in data_to_insert[token_type][tweet_id]:
+
+                                if not first_insert:
+                                    sql += ", (%s, %s, %s)"
+                                else:
+                                    first_insert = False
+                                sql_params += [tweet_id, token_id, data_to_insert[token_type][tweet_id][token_id]]
+                                assert sql.count("%s") == len(sql_params)
+                        _execute_statement(cursor, sql, sql_params)
+                        connection.commit()
 
     def get_counts(self, sentiment: str, token_type: str = ""):
         """
@@ -578,7 +654,6 @@ class DaoMySQLDB:
         # TODO: add token_ids to inputs
         # TODO: test
         for index, sentiment in enumerate(sentiments):
-
             with self.__connect_db() as connection:
                 with connection.cursor() as cursor:
                     """"""
@@ -623,25 +698,66 @@ class DaoMySQLDB:
         @param word: the word to get the result dict from
         @return: the result dict
         """
-        result = {}
+        word = word.lower()
+        result = {"word": word}
         with self.__connect_db() as connection:
             with connection.cursor() as cursor:
-                    cursor.execute('SET NAMES utf8mb4')
-                    cursor.execute("SET CHARACTER SET utf8mb4")
-                    cursor.execute("SET character_set_connection=utf8mb4")
+                cursor.execute('SET NAMES utf8mb4')
+                cursor.execute("SET CHARACTER SET utf8mb4")
+                cursor.execute("SET character_set_connection=utf8mb4")
 
-                    res = _execute_statement(cursor, f"SELECT `id`, `word` FROM `word`").fetchall()
+                sql = "SELECT * FROM `word` WHERE `word` = %s"
+                res = _execute_statement(cursor, sql, [word]).fetchone()
+                if res:
+                    result["id"] = res["id"]
+                    result["slang"] = res["slang"]
+                    result["definition"] = res["meaning"]
+                    result["count"] = {}
+                    result["popularity"] = {}
+
+                sql = "SELECT `sentiment_id`, `type`, `count`, `freq_perc` " \
+                      "FROM `word_in_sentiment` RIGHT JOIN `sentiment` ON `sentiment_id` = `id` " \
+                      "WHERE `token_id` = %s " \
+                      "GROUP BY `sentiment_id`"
+                res = _execute_statement(cursor, sql, [result["id"]]).fetchone()
+                if res is not None:
                     for t in res:
-                        """ """
-                        # TODO:
-
-                    result["id"] = "###"  # TODO:
-                    result["word"] = word
-                    result["count"] = {}  # TODO:
-                    result["definition"] = "###"  # TODO:
-                    result["popularity"] = {}  # TODO:
-
-                    id_sentiment = _execute_statement(cursor, "")
-
+                        result["count"][t["type"]] = t["count"]
+                        result["popularity"][t["type"]] = t["popularity"]
 
         return result
+
+
+if __name__ == '__main__':
+    """ 
+    Tests
+    """
+    db_type = True  # True value: MySQL
+    db = DaoMySQLDB()
+    print(db.get_result("hello"))
+    # data = {
+    #     "word": {
+    #         1: {1: 2, 2: 3},
+    #         2: {4: 5, 5: 6}
+    #     },
+    #     "emoji": {
+    #         5: {2: 3, 3: 4},
+    #         6: {5: 6, 6: 7}
+    #     },
+    #     "emoticon": {
+    #         8: {1: 2, 3: 4},
+    #         9: {4: 5, 6: 7}
+    #     }
+    # }
+    # data1 = {
+    #     'word': {
+    #         1: {3603: 1, 3: 2},
+    #         2: {3603: 1}
+    #     }
+    # }
+    # db.insert_tweets_tokens(data1)
+    data2 = {
+        1: ["hello", "hell", "hell"],
+        2: ["hello"]
+    }
+    # db.add_tweets_tokens(data2)
