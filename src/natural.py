@@ -108,16 +108,16 @@ def process_dataset(tweets: dict, sentiment: str):
     list of Count tuples of most used hashtags,
     list of Count tuples of emojis
     """
-    start = timer()
     print(f"Started NLP for {sentiment}")
+    start = timer()
     wordlist = []
     stopset = create_stopword_list()
     if '_id' in tweets:
-        # We pop _id from tweets because in the case of MongoDB we cannot iterate
         tweets.pop('_id')
-    for phrase in tweets.values():
+    for tweet_id, phrase in tweets.items():
         processed_phrase = process_phrase(phrase, stopset)
         wordlist.append(processed_phrase)
+        # insert_tweet_token(tweet_id, processed_phrase)
     count_tuples = count_words(wordlist)
     most_used_hashtags = count_hashtags(count_tuples)
     emojis, emoticons = count_emojis(count_tuples)
@@ -242,6 +242,7 @@ def quickstart(dao: Dao):
                      surprise_words, trust_words]
     emoticons_datasets = [anger_emoticons, anticipation_emoticons, disgust_emoticons, fear_emoticons, joy_emoticons,
                           sadness_emoticons, surprise_emoticons, trust_emoticons]
+    # TODO: utilizzare hashtag
     dao.build_sentiments(word_datasets, emoji_datasets, emoticons_datasets)
 
     if input("Do you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":

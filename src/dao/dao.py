@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+from timeit import default_timer as timer
 from src.dao.dao_mongo_db import DaoMongoDB
 from src.dao.dao_mysql_db import DaoMySQLDB
 from src.datasets_manager import (get_sentiment_emojis,
@@ -142,15 +143,15 @@ if __name__ == '__main__':
     Tests
     """
     word = "Hello"
-    # db_type = True  # True value: MySQL
-    # start = timer()
-    # db = Dao(db_type)
-    # # db.build_db()
-    # print(db.get_definition(word))
-    # print(db.get_count(word))
-    # print(db.get_popularity("Hello"))
-    # end = timer()
-    # print(f"Done in {end - start} seconds")
+    db_type = True  # True value: MySQL
+    start = timer()
+    db = Dao(db_type)
+    db.build_db()
+    print(db.get_definition(word))
+    print(db.get_count(word))
+    print(db.get_popularity("Hello"))
+    end = timer()
+    print(f"Done in {end - start} seconds")
 
     # db_type = False  # False value: MongoDB
     # start = timer()
