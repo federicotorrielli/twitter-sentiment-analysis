@@ -185,7 +185,7 @@ def create_word_final_result(dao):
     word_datasets = []
     sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
     for sentiment in sentiments:
-        word_datasets.append(dao.get_frequency(f"{sentiment}_words_frequency"))
+        word_datasets.append(dao.get_counts(sentiment, '_words'))
 
     result_list = []
     input_set = []
@@ -220,21 +220,21 @@ def quickstart(dao: Dao):
     download('stopwords')
 
     anger_words, anger_hashtags, anger_emojis, anger_emoticons = \
-        process_dataset(dao.get_tweets('anger_tweets'), 'anger_tweets')
+        process_dataset(dao.get_tweets('anger'), 'anger_tweets')
     anticipation_words, anticipation_hashtags, anticipation_emojis, anticipation_emoticons = \
-        process_dataset(dao.get_tweets('anticipation_tweets'), 'anticipation_tweets')
+        process_dataset(dao.get_tweets('anticipation'), 'anticipation_tweets')
     disgust_words, disgust_hashtags, disgust_emojis, disgust_emoticons = \
-        process_dataset(dao.get_tweets('disgust_tweets'), 'disgust_tweets')
+        process_dataset(dao.get_tweets('disgust'), 'disgust_tweets')
     fear_words, fear_hashtags, fear_emojis, fear_emoticons = \
-        process_dataset(dao.get_tweets('fear_tweets'), 'fear_tweets')
+        process_dataset(dao.get_tweets('fear'), 'fear_tweets')
     joy_words, joy_hashtags, joy_emojis, joy_emoticons = \
-        process_dataset(dao.get_tweets('joy_tweets'), 'joy_tweets')
+        process_dataset(dao.get_tweets('joy'), 'joy_tweets')
     sadness_words, sadness_hashtags, sadness_emojis, sadness_emoticons = \
-        process_dataset(dao.get_tweets('sadness_tweets'), 'sadness_tweets')
+        process_dataset(dao.get_tweets('sadness'), 'sadness_tweets')
     surprise_words, surprise_hashtags, surprise_emojis, surprise_emoticons = \
-        process_dataset(dao.get_tweets('surprise_tweets'), 'surprise_tweets')
+        process_dataset(dao.get_tweets('surprise'), 'surprise_tweets')
     trust_words, trust_hashtags, trust_emojis, trust_emoticons = \
-        process_dataset(dao.get_tweets('trust_tweets'), 'trust_tweets')
+        process_dataset(dao.get_tweets('trust'), 'trust_tweets')
 
     emoji_datasets = [anger_emojis, anticipation_emojis, disgust_emojis, fear_emojis, joy_emojis, sadness_emojis,
                       surprise_emojis, trust_emojis]
