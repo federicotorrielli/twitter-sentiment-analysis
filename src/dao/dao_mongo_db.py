@@ -95,11 +95,11 @@ class DaoMongoDB:
 
     def get_tweets(self, sentiment):
         sentiment += "_tweets"
-        self.get_document(sentiment)
+        return self.get_document(sentiment)
 
     def get_counts(self, sentiment, token_type: str = ""):
         sentiment += f"{token_type}_frequency"
-        self.get_document(sentiment, token_type)
+        return self.get_document(sentiment)
 
     def get_collection(self, collection_name):
         return self.__get_collection_address(collection_name).find()
