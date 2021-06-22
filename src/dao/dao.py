@@ -35,15 +35,16 @@ class Dao:
         """
         return self.dao_type.get_tweets(collection_name)
 
-    def get_counts(self, collection_name):
+    def get_counts(self, collection_name, token_type: str = ""):
         """
         Gets the dict of frequencies of type {item: count}
         where the number is monotonic and generated during the building
         of the database
         @param collection_name: document name
+        @param token_type: token category
         @return: dict {item: count}
         """
-        return self.dao_type.get_counts(collection_name)
+        return self.dao_type.get_counts(collection_name, token_type)
 
     def build_sentiments(self, word_datasets, emoji_datasets, emoticon_datasets):
         """
