@@ -94,10 +94,10 @@ class DaoMongoDB:
         return self.__get_collection_address(collection_name).find_one()
 
     def get_tweets(self, collection_name):
-        self.get_document(collection_name)
+        return self.get_document(collection_name)
 
     def get_counts(self, collection_name):
-        self.get_document(collection_name)
+        return self.get_document(collection_name)
 
     def get_collection(self, collection_name):
         return self.__get_collection_address(collection_name).find()
