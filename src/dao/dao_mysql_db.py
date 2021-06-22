@@ -415,12 +415,12 @@ class DaoMySQLDB:
             popularities[sentiment] = count[sentiment] / self.__get_word_numbers(sentiment)
         return popularities
 
-    def get_tweets(self, sentiment_name: str):
+    def get_tweets(self, sentiment: str):
         """
         Gets the dict of tweets of type {sentiment_number: "tweet"}
         where the number is monotonic and generated during the building
         of the database
-        @param sentiment_name:
+        @param sentiment:
         @return: dict {id_tweet: "tweet"}
         """
         tweets = {}
@@ -434,12 +434,12 @@ class DaoMySQLDB:
                     tweets[t["id"]] = t["tweet_content"]
         return tweets
 
-    def get_counts(self, sentiment_name: str):
+    def get_counts(self, sentiment: str):
         """
         Gets the dict of frequencies of type {item: count}
         where the number is monotonic and generated during the building
         of the database
-        @param sentiment_name: document name
+        @param sentiment: document name
         @return: dict {item: count}
         """
         # TODO: comment
