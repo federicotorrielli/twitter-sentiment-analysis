@@ -25,17 +25,25 @@ class Dao:
         self.dao_type.build_db(self.sentiments, get_sentiment_words(), get_sentiment_emoticons(),
                                get_sentiment_emojis(), get_sentiment_tweets())
 
-    def get_document(self, collection_name):
+    def get_tweets(self, collection_name):
         """
         Gets the dict of tweets of type {sentiment_number: "tweet"}
         where the number is monotonic and generated during the building
         of the database
-        @param collection_name:
-        @return:
+        @param collection_name: document name
+        @return: dict {sentiment_number: "tweet"}
         """
-        # TODO: do it in dao_mysql_db (?)
-        # TODO: complete comment
-        return self.dao_type.get_document(collection_name)
+        return self.dao_type.get_tweets(collection_name)
+
+    def get_counts(self, collection_name):
+        """
+        Gets the dict of frequencies of type {item: count}
+        where the number is monotonic and generated during the building
+        of the database
+        @param collection_name: document name
+        @return: dict {item: count}
+        """
+        return self.dao_type.get_counts(collection_name)
 
     def build_sentiments(self, word_datasets, emoji_datasets, emoticon_datasets):
         """
@@ -44,7 +52,7 @@ class Dao:
         @param emoji_datasets: a list of dicts for every emoji_frequency sentiment
         @param emoticon_datasets: a list of dicts for every emoticon_frequency sentiment
         """
-        # TODO: do it in dao_mysql_db (?)
+        # TODO: do it in dao_mysql_db
         self.dao_type.build_sentiments(self.sentiments, word_datasets, emoji_datasets, emoticon_datasets)
 
     def dump_definitions(self, definitions: dict, name: str):
@@ -53,7 +61,8 @@ class Dao:
         @param definitions: a dict containing tuples {word: definition}
         @param name: the name of the table/document to put it in
         """
-        # TODO: do it in dao_mysql_db (see the mongo implementation) (already done in build_db)
+        # TODO: do it in dao_mysql_db (see the mongo implementation)
+        #  (already done in build_db, if we do it in 2 phases it'll be so slow)
         self.dao_type.dump_definitions(definitions, name)
 
     def get_definition(self, word: str, sentiment: str = "") -> str:
@@ -64,7 +73,8 @@ class Dao:
         @param sentiment: (optional) the sentiment to search it for
         @return: the definition of the word
         """
-        # TODO: do it in dao_mysql_db (see the mongo implementation)
+        word = word.lower()
+        sentiment = sentiment.lower()
         return self.dao_type.get_definition(word, sentiment)
 
     def get_count(self, word: str) -> dict:
@@ -73,7 +83,7 @@ class Dao:
         @param word: the word or emoji you are trying to find
         @return: the number of times that word appeared for every sentiment (a dict)
         """
-        # TODO: do it in dao_mysql_db (see the mongo implementation)
+        word = word.lower()
         return self.dao_type.get_count(word)
 
     def get_popularity(self, word: str, count: dict = None) -> dict:
@@ -86,7 +96,7 @@ class Dao:
         @param count: the count dict, see get_count(...)
         @return: a dict of all the percentages for every sentiment
         """
-        # TODO: do it in dao_mysql_db (see the mongo implementation)
+        word = word.lower()
         return self.dao_type.get_popularity(word, count)
 
     def push_result(self, word: str, count: dict, definition: str, popularity: dict):
@@ -98,6 +108,7 @@ class Dao:
         @param popularity: the popularity dict (see get_popularity(...))
         """
         # TODO: do it in dao_mysql_db (see issue #10)
+        #  there's already the word definition in the db (?), line 50
         self.dao_type.push_result(word, count, definition, popularity)
 
     def push_results(self, result_list: []):
@@ -133,9 +144,23 @@ if __name__ == '__main__':
     """ 
     Tests
     """
-    db_type = True  # True value: MySQL
-    start = timer()
-    db = Dao(db_type)
-    db.build_db()
-    end = timer()
-    print(f"Done {db_type} in {end - start} seconds")
+    word = "Hello"
+    # db_type = True  # True value: MySQL
+    # start = timer()
+    # db = Dao(db_type)
+    # # db.build_db()
+    # print(db.get_definition(word))
+    # print(db.get_count(word))
+    # print(db.get_popularity("Hello"))
+    # end = timer()
+    # print(f"Done in {end - start} seconds")
+
+    # db_type = False  # False value: MongoDB
+    # start = timer()
+    # db = Dao(db_type)
+    # # db.build_db()
+    # print(db.get_definition(word))
+    # print(db.get_count(word))
+    # print(db.get_popularity(word))
+    # end = timer()
+    # print(f"Done in {end - start} seconds")
