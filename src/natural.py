@@ -62,7 +62,7 @@ def count_words(wordlist):
     final_list = []
     for tokenized_phrase in wordlist:
         for word in tokenized_phrase:
-            if not word.startswith(".") and not word.startswith("$"):
+            if "." not in word and "$" not in word:
                 final_list.append(word)
     return Counter(x for x in final_list)
 

@@ -55,7 +55,7 @@ class Dao:
         @param emoticon_datasets: a list of dicts for every emoticon_count sentiment
         """
         # TODO: do it in dao_mysql_db
-        self.dao_type.build_sentiments(self.sentiments, word_datasets, emoji_datasets, emoticon_datasets)
+        self.dao_type.build_sentiments(word_datasets, emoji_datasets, emoticon_datasets)
 
     def dump_definitions(self, definitions: dict, name: str):
         """
