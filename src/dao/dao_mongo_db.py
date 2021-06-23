@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import pymongo
 from src.file_manager import read_file
+from bson.code import Code
 
 
 class DaoMongoDB:
@@ -16,7 +17,7 @@ class DaoMongoDB:
                                 "surprise": {}, "trust": {}}
         self.slang_definitions = {"anger": {}, "anticipation": {}, "disgust": {}, "fear": {}, "joy": {}, "sadness": {},
                                   "surprise": {}, "trust": {}}
-        self.frequencies = {"anger": {}, "anticipation": {}, "disgust": {}, "fear": {}, "joy": {}, "sadness": {},
+        self.word_counts = {"anger": {}, "anticipation": {}, "disgust": {}, "fear": {}, "joy": {}, "sadness": {},
                             "surprise": {}, "trust": {}}
 
     def build_db(self, sentiments, words, emoticons, emojis, twitter_paths):
@@ -65,14 +66,19 @@ class DaoMongoDB:
             tweet_dict[f'{sentiment}_{key}'] = line
         tweet_document.insert(tweet_dict)
 
-    def build_sentiments(self, sentiments, word_datasets, emoji_datasets, emoticon_datasets):
+    def build_sentiments(self, word_datasets, emoji_datasets, emoticon_datasets):
+        sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
+        to_add_words, to_add_emojis, to_add_emoticons = {}, {}, {}
         for index, sentiment in enumerate(sentiments):
-            word_table = self.database[f'{sentiment}_words_frequency']
-            emoji_table = self.database[f'{sentiment}_emoji_frequency']
-            emoticon_table = self.database[f'{sentiment}_emoticon_frequency']
-            word_table.insert(word_datasets[index], check_keys=False)
-            emoji_table.insert(emoji_datasets[index], check_keys=False)
-            emoticon_table.insert(emoticon_datasets[index], check_keys=False)
+            to_add_words[sentiment] = word_datasets[index]
+            to_add_emojis[sentiment] = emoji_datasets[index]
+            to_add_emoticons[sentiment] = emoticon_datasets[index]
+        sentiments_word_table = self.database['count_words']
+        sentiments_word_table.insert_one(to_add_words)
+        sentiments_emoji_table = self.database['count_emoji']
+        sentiments_emoji_table.insert_one(to_add_emojis)
+        sentiments_emoticon_table = self.database['count_emoticon']
+        sentiments_emoticon_table.insert_one(to_add_emoticons)
 
     def create_index(self, index: str, table: str):
         t = self.__get_collection_address(table)
@@ -82,11 +88,12 @@ class DaoMongoDB:
         sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
         final_list = {}
         for sentiment in sentiments:
-            if len(self.frequencies[sentiment]) == 0:
-                self.frequencies[sentiment] = self.get_document(f"{sentiment}_words_frequency")
+            if len(self.word_counts[sentiment]) == 0:
+                sentiments_word_table = self.database['count_words']
+                self.word_counts[sentiment] = sentiments_word_table.find_one({}, {sentiment})[sentiment]
 
-            if word in self.frequencies[sentiment]:
-                final_list[sentiment] = self.frequencies[sentiment][word]
+            if word in self.word_counts[sentiment]:
+                final_list[sentiment] = self.word_counts[sentiment][word]
         return final_list
 
     def get_document(self, collection_name):
@@ -98,8 +105,8 @@ class DaoMongoDB:
         return self.get_document(sentiment)
 
     def get_counts(self, sentiment, token_type: str = ""):
-        sentiment += f"{token_type}_frequency"
-        return self.get_document(sentiment)
+        sentiments_table = self.database[f'count{token_type}']
+        return sentiments_table.find_one({}, {sentiment})[sentiment]
 
     def get_collection(self, collection_name):
         return self.__get_collection_address(collection_name).find()
@@ -133,8 +140,7 @@ class DaoMongoDB:
         final_list = {}
         for sentiment in sentiments:
             if sentiment in count:
-                final_list[sentiment] = \
-                    f"{count[sentiment] / self.__get_word_numbers(sentiment)}%"
+                final_list[sentiment] = count[sentiment] / self.__get_word_numbers(sentiment)
         return final_list
 
     def dump_definitions(self, definitions: dict, name: str):
@@ -162,3 +168,8 @@ class DaoMongoDB:
         @return: dict {"token": id}
         """
         # TODO:
+
+
+if __name__ == '__main__':
+    dao = DaoMongoDB()
+    pprint.pprint(dao.get_counts("anticipation", "_words")['anticipation'])

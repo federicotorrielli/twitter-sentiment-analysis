@@ -62,7 +62,7 @@ def count_words(wordlist):
     final_list = []
     for tokenized_phrase in wordlist:
         for word in tokenized_phrase:
-            if not word.startswith(".") and not word.startswith("$"):
+            if "." not in word and "$" not in word:
                 final_list.append(word)
     return Counter(x for x in final_list)
 
@@ -108,16 +108,16 @@ def process_dataset(tweets: dict, sentiment: str):
     list of Count tuples of most used hashtags,
     list of Count tuples of emojis
     """
-    start = timer()
     print(f"Started NLP for {sentiment}")
+    start = timer()
     wordlist = []
     stopset = create_stopword_list()
     if '_id' in tweets:
-        # We pop _id from tweets because in the case of MongoDB we cannot iterate
         tweets.pop('_id')
-    for phrase in tweets.values():
+    for tweet_id, phrase in tweets.items():
         processed_phrase = process_phrase(phrase, stopset)
         wordlist.append(processed_phrase)
+        # insert_tweet_token(tweet_id, processed_phrase)
     count_tuples = count_words(wordlist)
     most_used_hashtags = count_hashtags(count_tuples)
     emojis, emoticons = count_emojis(count_tuples)
@@ -216,8 +216,8 @@ def quickstart(dao: Dao):
     """
     Quick start of the dataset sentiment analysis.
     """
-    download('punkt')
-    download('stopwords')
+    download('punkt')  # Scarica la punteggiatura dal server di nltk (one-time)
+    download('stopwords')  # Scarica l'elenco di stopwords dal server di nltk (one-time)
 
     anger_words, anger_hashtags, anger_emojis, anger_emoticons = \
         process_dataset(dao.get_tweets('anger'), 'anger_tweets')
@@ -242,11 +242,11 @@ def quickstart(dao: Dao):
                      surprise_words, trust_words]
     emoticons_datasets = [anger_emoticons, anticipation_emoticons, disgust_emoticons, fear_emoticons, joy_emoticons,
                           sadness_emoticons, surprise_emoticons, trust_emoticons]
+    # TODO: utilizzare hashtag
     dao.build_sentiments(word_datasets, emoji_datasets, emoticons_datasets)
 
     if input("Do you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
-        # create_definitions(word_datasets, dao)
-        create_definitions(word_datasets)
+        create_definitions(word_datasets, dao)
         if input("Do you want to create results for the words? [y/N] ").lower() == "y":
             create_word_final_result(dao)
 

@@ -1,9 +1,10 @@
 #!/usr/bin/python3
+from timeit import default_timer as timer
 from src.dao.dao_mongo_db import DaoMongoDB
 from src.dao.dao_mysql_db import DaoMySQLDB
-from src.datasets_manager import get_sentiment_words, get_sentiment_emoticons, get_sentiment_emojis, \
-    get_sentiment_tweets
-from timeit import default_timer as timer
+from src.datasets_manager import (get_sentiment_emojis,
+                                  get_sentiment_emoticons,
+                                  get_sentiment_tweets, get_sentiment_words)
 
 
 class Dao:
@@ -49,9 +50,9 @@ class Dao:
     def build_sentiments(self, word_datasets, emoji_datasets, emoticon_datasets):
         """
         Puts in the db the different datasets built in natural
-        @param word_datasets: a list of dicts for every word_frequency sentiment
-        @param emoji_datasets: a list of dicts for every emoji_frequency sentiment
-        @param emoticon_datasets: a list of dicts for every emoticon_frequency sentiment
+        @param word_datasets: a list of dicts for every word_count sentiment
+        @param emoji_datasets: a list of dicts for every emoji_count sentiment
+        @param emoticon_datasets: a list of dicts for every emoticon_count sentiment
         """
         self.dao_type.build_sentiments(self.sentiments, word_datasets, emoji_datasets, emoticon_datasets)
 

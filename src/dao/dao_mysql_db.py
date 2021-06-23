@@ -3,9 +3,10 @@ import sys
 
 import pymysql
 from pymysql import MySQLError
-from toml import load
 from src.file_manager import get_project_root, read_file
-from src.slang import preparse_slang_toml_files, check_word_existence, preparse_standard_toml_files
+from src.slang import (check_word_existence, preparse_slang_toml_files,
+                       preparse_standard_toml_files)
+from toml import load
 
 
 def _execute_statement(cursor, statement: str, params: [] = None):
