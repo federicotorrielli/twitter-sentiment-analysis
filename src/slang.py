@@ -13,12 +13,12 @@ def create_definitions(datasets: [], dao):
     @param datasets:
     """
     i = 0
-    names = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
+    sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
 
     for sentiment in datasets:
         standard_toml_files = preparse_standard_toml_files()
         slang_toml_files = preparse_slang_toml_files()
-        dataset_name = names[i]
+        dataset_name = sentiments[i]
         print(f"Processing {len(sentiment)} words for {dataset_name} dataset!")
         slang_dict = {}
         definitions_dict = {}

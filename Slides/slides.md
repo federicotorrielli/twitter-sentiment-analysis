@@ -113,3 +113,71 @@ layout: center
 * Per prendere le percentuali di popularity-per-dataset al fine di generare il risultato finale: `dao.get_popularity(...)`
 * Per caricare i risultati finali generati sui rispettivi database: `dao.push_results(...)`
 * Per creare mettere l'index sulle word dei risultati finali, dopo l'upload: `dao.create_index(...)`
+
+---
+
+# Esempio: Natural
+
+```python
+def process_dataset(tweets: dict, sentiment: str):
+    print(f"Started NLP for {sentiment}")
+    start = timer()
+    wordlist = []
+    stopset = create_stopword_list()
+    if '_id' in tweets:
+        tweets.pop('_id')
+    for tweet_id, phrase in tweets.items():
+        processed_phrase = process_phrase(phrase, stopset)
+        wordlist.append(processed_phrase)
+        insert_tweet_token(tweet_id, processed_phrase)
+    count_tuples = count_words(wordlist)
+    most_used_hashtags = count_hashtags(count_tuples)
+    emojis, emoticons = count_emojis(count_tuples)
+    count_tuples = exclude_hastags_emojis(count_tuples)
+    end = timer()
+    print(f"Done processing in {end - start} seconds")
+    return dict(count_tuples), dict(most_used_hashtags), dict(emojis), dict(emoticons)
+```
+
+---
+
+# Codice: Slang
+
+* **Input**: Una lista di dizionari di word
+* **Output**: Le definizioni delle word in input, passate al DAO.
+* **Spiegazione**: Per ogni parola viene cercata prima la sua definizione nel dizionario generale (DictionaryAPI).
+  Se questa non viene trovata, si considera la parola uno slang, e quindi viene rifatta una ricerca nell'Urban Dicitonary.
+  Se ancora non viene trovata, allora si tratta di un errore di scrittura oppure di un neologismo, e quindi viene ignorata.
+  Per velocizzare la ricerca sui dataset, le definizioni vengono salvate in un file locale ".toml" in modo da poter essere
+  recuperate se per qualche motivazione l'esecuzione del programma non andasse a buon fine.
+
+---
+
+# I/O: Slang
+
+* Per caricare le definizioni delle parole: `dao.dump_definitions(...)`
+* Per caricare in locale le definizioni pre-esistenti: `file_manager.dump_toml(...)`
+* Per scaricare i JSON delle definizioni delle API: `requests.get(...)`
+
+Nella slide seguente andiamo ad includere un pezzo del codice per recuperare il JSON della definizione dalla API Slang
+
+---
+
+# Esempio: Slang
+
+```python
+def get_slang_definition(word):
+    response = get(f"https://api.urbandictionary.com/v0/define?term={word}")
+    response.encoding = 'utf-8'
+    good_definition = {"definition": "", "count": 0}
+    if response.ok:
+        text = response.json()
+        if 'list' in text:
+            for elem in text['list']:
+                if elem['thumbs_up'] > elem['thumbs_down'] and good_definition['count'] < elem['thumbs_up']:
+                    good_definition = {"definition": elem['definition'], "count": elem['thumbs_up']}
+    return good_definition["definition"]
+```
+Possiamo osservare come, essendo Urban Dictionary un dizionario di comunità, debba essere selezionata la
+"risorsa migliore" tra quelle esistenti, andando a selezionare solo quella con like > dislike e con
+like molto maggiori tra tutte le definizioni recuperate.
