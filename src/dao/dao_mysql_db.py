@@ -486,7 +486,7 @@ class DaoMySQLDB:
         return popularities
 
     def __calculate_popularity(self, count, sentiment_tot):
-        return count / sentiment_tot
+        return round(count / sentiment_tot, 4)
 
     def get_tweets(self, sentiment: str):
         """
@@ -711,7 +711,7 @@ class DaoMySQLDB:
         @return: the result dict
         """
         word = word.lower()
-        result = {"word": word}
+        result = {}
         with self.__connect_db() as connection:
             with connection.cursor() as cursor:
                 cursor.execute('SET NAMES utf8mb4')
@@ -721,21 +721,22 @@ class DaoMySQLDB:
                 sql = "SELECT * FROM `word` WHERE `word` = %s"
                 res = _execute_statement(cursor, sql, [word]).fetchone()
                 if res:
+                    result["word"] = word
                     result["id"] = res["id"]
-                    result["slang"] = res["slang"]
+                    result["slang"] = True if res["slang"] == 0 else False
                     result["definition"] = res["meaning"]
                     result["count"] = {}
                     result["popularity"] = {}
 
-                sql = "SELECT `sentiment_id`, `type`, `count`, `freq_perc` " \
-                      "FROM `word_in_sentiment` RIGHT JOIN `sentiment` ON `sentiment_id` = `id` " \
-                      "WHERE `token_id` = %s " \
-                      "GROUP BY `sentiment_id`"
-                res = _execute_statement(cursor, sql, [result["id"]]).fetchone()
-                if res is not None:
-                    for t in res:
-                        result["count"][t["type"]] = t["count"]
-                        result["popularity"][t["type"]] = t["popularity"]
+                    sql = "SELECT `sentiment_id`, `type`, `count`, `freq_perc` " \
+                          "FROM `word_in_sentiment` RIGHT JOIN `sentiment` ON `sentiment_id` = `id` " \
+                          "WHERE `token_id` = %s " \
+                          "GROUP BY `sentiment_id`"
+                    res = _execute_statement(cursor, sql, [result["id"]])
+                    if res is not None:
+                        for t in res.fetchall():
+                            result["count"][t["type"]] = t["count"]
+                            result["popularity"][t["type"]] = t["freq_perc"]
 
         return result
 
