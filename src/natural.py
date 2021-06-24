@@ -12,7 +12,8 @@ from dao.dao import Dao
 from file_manager import read_file
 from lexical_glob import get_lexical_filenames, get_lexical_Nlines
 from set_classification import negemoticons, posemoticons, twitter_stopwords
-from src.slang import create_definitions, preparse_standard_toml_files, preparse_slang_toml_files
+from src.slang import create_definitions, preparse_standard_toml_files, preparse_slang_toml_files, \
+    preparse_standard_toml_files_sentiment, preparse_slang_toml_files_sentiment
 
 tokenizer = TweetTokenizer()
 
@@ -214,6 +215,18 @@ def create_word_final_result(dao):
     print(f"Done creating the final results in {end - start} seconds")
 
 
+def dump_definitions_mongodb():
+    dao = Dao(False)
+    if dao.is_mongodb():
+        sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
+        for sentiment in sentiments:
+            standard_toml_files = preparse_standard_toml_files_sentiment(sentiment)
+            slang_toml_files = preparse_slang_toml_files_sentiment(sentiment)
+
+            dao.dump_definitions(standard_toml_files, f"standard_definitions_{sentiment}")
+            dao.dump_definitions(slang_toml_files, f"slang_definitions_{sentiment}")
+
+
 def quickstart(dao: Dao):
     """
     Quick start of the dataset sentiment analysis.
@@ -249,7 +262,9 @@ def quickstart(dao: Dao):
 
     if input("Do you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
         create_definitions(word_datasets, dao)  # toml files
-    if not dao.is_mongodb():
+    if dao.is_mongodb():
+        dump_definitions_mongodb()
+    else:
         dao.dump_definitions()
 
     if dao.is_mongodb():
