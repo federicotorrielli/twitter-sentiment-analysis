@@ -677,7 +677,7 @@ class DaoMySQLDB:
                                             id_sentiment,
                                             list_word[word],
                                             self.__calculate_popularity(word_datasets[index][word],
-                                                                       sentiments_count[sentiment]))]
+                                                                        sentiments_count[sentiment]))]
                     if sql_params is not []:
                         _executemany_statements(cursor, sql_intert, sql_params)
                         connection.commit()
@@ -739,6 +739,13 @@ class DaoMySQLDB:
                             result["popularity"][t["type"]] = t["freq_perc"]
 
         return result
+
+    def get_sentiments_popularity(self) -> dict:
+        """
+        Gets the usage percentage of lexical words in tweets
+        @return: a dict of all the percentages for every sentiment
+        """
+        # TODO:
 
 
 if __name__ == '__main__':

@@ -161,6 +161,13 @@ class DaoMongoDB:
         results = self.__get_collection_address("results")
         results.insert_many(result_list)
 
+    def get_sentiments_popularity(self) -> dict:
+        """
+        Gets the usage percentage of lexical words in tweets
+        @return: a dict of all the percentages for every sentiment
+        """
+        # TODO:
+
 
 if __name__ == '__main__':
     dao = DaoMongoDB()

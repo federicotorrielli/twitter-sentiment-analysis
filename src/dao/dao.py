@@ -107,6 +107,15 @@ class Dao:
         else:
             return self.dao_type.get_popularity(word.lower(), count)
 
+    def get_sentiments_popularity(self) -> dict:
+        """
+        Gets the usage percentage of lexical words in tweets
+        @return: a dict of all the percentages for every sentiment
+        """
+        # TODO: MySQL
+        # TODO: MongoDB
+        return self.dao_type.get_sentiments_popularity()
+
     def push_result(self, word: str, count: dict, definition: str, popularity: dict):
         """
         Pushes a single result to the "result" table/document
