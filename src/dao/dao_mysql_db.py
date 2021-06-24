@@ -182,7 +182,6 @@ class DaoMySQLDB:
                                            "`sentiment_id` int NOT NULL,"
                                            "`token_id` int NOT NULL,"
                                            "`count` int NOT NULL DEFAULT -1,"
-                                           "`freq_perc` float NOT NULL DEFAULT -1,"
                                            "PRIMARY KEY(`sentiment_id`,`token_id`),"
                                            "FOREIGN KEY (`token_id`) REFERENCES `emoji` (`id`) "
                                            "ON DELETE CASCADE ON UPDATE CASCADE,"
@@ -194,7 +193,6 @@ class DaoMySQLDB:
                                            "`sentiment_id` int NOT NULL,"
                                            "`token_id` int NOT NULL,"
                                            "`count` int NOT NULL DEFAULT -1,"
-                                           "`freq_perc` float NOT NULL DEFAULT -1,"
                                            "PRIMARY KEY(`sentiment_id`,`token_id`),"
                                            "FOREIGN KEY (`token_id`) REFERENCES `emoticon` (`id`) "
                                            "ON DELETE CASCADE ON UPDATE CASCADE,"
@@ -491,7 +489,6 @@ class DaoMySQLDB:
         @param sentiment:
         @return: dict {id_tweet: "tweet"}
         """
-        # TODO: test
         tweets = {}
         with self.__connect_db() as connection:
             with connection.cursor() as cursor:
@@ -525,7 +522,7 @@ class DaoMySQLDB:
         Inserts the connection between tweets and tokens
         @param tweets_tokens: {tweet_id: [tokens]...}
         """
-        # TODO: remove symbols and what is not a token we need
+        # TODO: remove symbols and what is not a token we need (like "i'm")
         # TODO: manage new tokens
         list_word = self.get_tokens("word")
         list_emoji = self.get_tokens("emoji")
@@ -568,7 +565,6 @@ class DaoMySQLDB:
             "emoji": data_emoji,
             "emoticon": data_emoticon
         }
-        # TODO: move the func to natural and call dao.insert_tweets_tokens(data_to_insert)
         self.insert_tweets_tokens(data_to_insert)
 
     def insert_tweets_tokens(self, data_to_insert: {}):
@@ -576,16 +572,15 @@ class DaoMySQLDB:
         Inserts the connection between tweets and tokens
         @param data_to_insert: {token_type: {tweet_id: {token_id: count,...},...},...}
         """
-        with self.__connect_db() as connection:
-            with connection.cursor() as cursor:
-
-                for token_type in data_to_insert:
+        for token_type in data_to_insert:
+            with self.__connect_db() as connection:
+                with connection.cursor() as cursor:
                     if len(data_to_insert[token_type]) > 0:
-                        sql = f"INSERT INTO `{token_type}_in_tweet` " \
-                              f"(`tweet_id`, `token_id`, `count`) VALUES (%s, %s, %s)"
-                        sql_params = []
-                        first_insert = True
                         for tweet_id in data_to_insert[token_type]:
+                            sql = f"INSERT INTO `{token_type}_in_tweet` " \
+                                  f"(`tweet_id`, `token_id`, `count`) VALUES (%s, %s, %s)"
+                            sql_params = []
+                            first_insert = True
                             for token_id in data_to_insert[token_type][tweet_id]:
 
                                 if not first_insert:
@@ -593,8 +588,8 @@ class DaoMySQLDB:
                                 else:
                                     first_insert = False
                                 sql_params += [tweet_id, token_id, data_to_insert[token_type][tweet_id][token_id]]
-                                assert sql.count("%s") == len(sql_params)
-                        _execute_statement(cursor, sql, sql_params)
+                                # assert sql.count("%s") == len(sql_params)
+                            _execute_statement(cursor, sql, sql_params)
                         connection.commit()
 
     def get_counts(self, sentiment: str, token_type: str = ""):
@@ -652,46 +647,54 @@ class DaoMySQLDB:
         @param emoji_datasets: a list of dicts for every emoji_frequency sentiment
         @param emoticon_datasets: a list of dicts for every emoticon_frequency sentiment
         """
-        # TODO: add token_ids to inputs
+        # TODO: remove words like "i'm"
         # TODO: test
+        list_word = self.get_tokens("word")
+        freq_words = {word: self.get_popularity(word) for word in list_word}
+        list_emoji = self.get_tokens("emoji")
+        list_emoticon = self.get_tokens("emoticon")
+
         for index, sentiment in enumerate(sentiments):
             with self.__connect_db() as connection:
                 with connection.cursor() as cursor:
-                    """"""
-                    # cursor.execute('SET NAMES utf8mb4')
-                    # cursor.execute("SET CHARACTER SET utf8mb4")
-                    # cursor.execute("SET character_set_connection=utf8mb4")
-                    #
-                    # id_sentiment = _execute_statement(cursor, f"SELECT `id` FROM `sentiment` "
-                    #                                           f"WHERE `type` = \'{sentiment}\'").fetchone()["id"]
-                    # assert id_sentiment >= 1
-                    #
-                    # sql_update = "UPDATE `word_in_sentiment` SET `count` = %s " \
-                    #              "WHERE `sentiment_id` = %s AND `token_id` = %s"
-                    # sql_params = []
-                    # for word in word_datasets[index]:
-                    #     # TODO: add token_id to input
-                    #     sql_params += [(word_datasets[index][word], id_sentiment, "token_id")]
-                    # _executemany_statements(cursor, sql_update, sql_params)
-                    # connection.commit()
-                    #
-                    # sql_update = "UPDATE `emoji_in_sentiment` SET `count` = %s " \
-                    #              "WHERE `sentiment_id` = %s AND `token_id` = %s"
-                    # sql_params=[]
-                    # for emoji in emoji_datasets[index]:
-                    #     # TODO: add token_id to input
-                    #     sql_params += [(word_datasets[index][word], id_sentiment, "token_id")]
-                    # _executemany_statements(cursor, sql_update, sql_params)
-                    # connection.commit()
-                    #
-                    # sql_update = "UPDATE `emoticon_in_sentiment` SET `count` = %s " \
-                    #              "WHERE `sentiment_id` = %s AND `token_id` = %s"
-                    # sql_params=[]
-                    # for emoticon in emoticon_datasets[index]:
-                    #     # TODO: add token_id to input
-                    #     sql_params += [(word_datasets[index][word], id_sentiment, "token_id")]
-                    # _executemany_statements(cursor, sql_update, sql_params)
-                    # connection.commit()
+                    cursor.execute('SET NAMES utf8mb4')
+                    cursor.execute("SET CHARACTER SET utf8mb4")
+                    cursor.execute("SET character_set_connection=utf8mb4")
+
+                    id_sentiment = _execute_statement(cursor, f"SELECT `id` FROM `sentiment` "
+                                                              f"WHERE `type` = \'{sentiment}\'").fetchone()["id"]
+                    assert id_sentiment >= 1
+
+                    sql_update = "UPDATE `word_in_sentiment` SET `count` = %s, `freq_perc` = %s  " \
+                                 "WHERE `sentiment_id` = %s AND `token_id` = %s"
+                    sql_params = []
+                    for word in word_datasets[index]:
+                        if word in list_word:
+                            sql_params += [(word_datasets[index][word], freq_words[word],
+                                            id_sentiment, list_word[word])]
+                    if sql_params is not []:
+                        _executemany_statements(cursor, sql_update, sql_params)
+                        connection.commit()
+
+                    sql_update = "UPDATE `emoji_in_sentiment` SET `count` = %s " \
+                                 "WHERE `sentiment_id` = %s AND `token_id` = %s"
+                    sql_params = []
+                    for emoji in emoji_datasets[index]:
+                        if emoji in list_emoji:
+                            sql_params += [(word_datasets[index][word], id_sentiment, list_emoji[emoji])]
+                    if sql_params is not []:
+                        _executemany_statements(cursor, sql_update, sql_params)
+                        connection.commit()
+
+                    sql_update = "UPDATE `emoticon_in_sentiment` SET `count` = %s " \
+                                 "WHERE `sentiment_id` = %s AND `token_id` = %s"
+                    sql_params = []
+                    for emoticon in emoticon_datasets[index]:
+                        if emoticon in list_emoticon:
+                            sql_params += [(word_datasets[index][word], id_sentiment, list_emoticon[emoticon])]
+                    if sql_params is not []:
+                        _executemany_statements(cursor, sql_update, sql_params)
+                        connection.commit()
 
     def get_result(self, word: str) -> dict:
         """
@@ -733,32 +736,5 @@ if __name__ == '__main__':
     """ 
     Tests
     """
-    db_type = True  # True value: MySQL
     db = DaoMySQLDB()
     print(db.get_result("hello"))
-    # data = {
-    #     "word": {
-    #         1: {1: 2, 2: 3},
-    #         2: {4: 5, 5: 6}
-    #     },
-    #     "emoji": {
-    #         5: {2: 3, 3: 4},
-    #         6: {5: 6, 6: 7}
-    #     },
-    #     "emoticon": {
-    #         8: {1: 2, 3: 4},
-    #         9: {4: 5, 6: 7}
-    #     }
-    # }
-    # data1 = {
-    #     'word': {
-    #         1: {3603: 1, 3: 2},
-    #         2: {3603: 1}
-    #     }
-    # }
-    # db.insert_tweets_tokens(data1)
-    data2 = {
-        1: ["hello", "hell", "hell"],
-        2: ["hello"]
-    }
-    # db.add_tweets_tokens(data2)
