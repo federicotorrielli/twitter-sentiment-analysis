@@ -3,7 +3,6 @@ import pprint
 
 import pymongo
 from src.file_manager import read_file
-from bson.code import Code
 
 
 class DaoMongoDB:
