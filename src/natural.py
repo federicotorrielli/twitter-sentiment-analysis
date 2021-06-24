@@ -12,7 +12,8 @@ from dao.dao import Dao
 from file_manager import read_file
 from lexical_glob import get_lexical_filenames, get_lexical_Nlines
 from set_classification import negemoticons, posemoticons, twitter_stopwords
-from src.slang import create_definitions
+from src.slang import create_definitions, preparse_standard_toml_files, preparse_slang_toml_files, \
+    preparse_standard_toml_files_sentiment, preparse_slang_toml_files_sentiment
 
 tokenizer = TweetTokenizer()
 
@@ -102,7 +103,7 @@ def exclude_hastags_emojis(count_tuples):
             and not item[0] in UNICODE_EMOJI_ENGLISH and not item[0] in posemoticons and not item[0] in negemoticons]
 
 
-def process_dataset(tweets: dict, sentiment: str):
+def process_dataset(dao, tweets: dict, sentiment: str):
     """
     Given a datasets, it processes all its phrases line-by-line and
     extracts the wordlist and the hashtag list tuple made like
@@ -115,12 +116,14 @@ def process_dataset(tweets: dict, sentiment: str):
     start = timer()
     wordlist = []
     stopset = create_stopword_list()
+    tweets_tokens = {}
     if '_id' in tweets:
         tweets.pop('_id')
     for tweet_id, phrase in tweets.items():
         processed_phrase = process_phrase(phrase, stopset)
         wordlist.append(processed_phrase)
-        # insert_tweet_token(tweet_id, processed_phrase)
+        tweets_tokens[tweet_id] = processed_phrase  # used in relational db
+    dao.add_tweets_tokens(tweets_tokens)  # used in relational db
     count_tuples = count_words(wordlist)
     most_used_hashtags = count_hashtags(count_tuples)
     emojis, emoticons = count_emojis(count_tuples)
@@ -215,6 +218,18 @@ def create_word_final_result(dao):
     print(f"Done creating the final results in {end - start} seconds")
 
 
+def dump_definitions_mongodb():
+    dao = Dao(False)
+    if dao.is_mongodb():
+        sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
+        for sentiment in sentiments:
+            standard_toml_files = preparse_standard_toml_files_sentiment(sentiment)
+            slang_toml_files = preparse_slang_toml_files_sentiment(sentiment)
+
+            dao.dump_definitions(standard_toml_files, f"standard_definitions_{sentiment}")
+            dao.dump_definitions(slang_toml_files, f"slang_definitions_{sentiment}")
+
+
 def quickstart(dao: Dao):
     """
     Quick start of the dataset sentiment analysis.
@@ -223,21 +238,21 @@ def quickstart(dao: Dao):
     download('stopwords')  # Scarica l'elenco di stopwords dal server di nltk (one-time)
 
     anger_words, anger_hashtags, anger_emojis, anger_emoticons = \
-        process_dataset(dao.get_tweets('anger'), 'anger_tweets')
+        process_dataset(dao, dao.get_tweets('anger'), 'anger_tweets')
     anticipation_words, anticipation_hashtags, anticipation_emojis, anticipation_emoticons = \
-        process_dataset(dao.get_tweets('anticipation'), 'anticipation_tweets')
+        process_dataset(dao, dao.get_tweets('anticipation'), 'anticipation_tweets')
     disgust_words, disgust_hashtags, disgust_emojis, disgust_emoticons = \
-        process_dataset(dao.get_tweets('disgust'), 'disgust_tweets')
+        process_dataset(dao, dao.get_tweets('disgust'), 'disgust_tweets')
     fear_words, fear_hashtags, fear_emojis, fear_emoticons = \
-        process_dataset(dao.get_tweets('fear'), 'fear_tweets')
+        process_dataset(dao, dao.get_tweets('fear'), 'fear_tweets')
     joy_words, joy_hashtags, joy_emojis, joy_emoticons = \
-        process_dataset(dao.get_tweets('joy'), 'joy_tweets')
+        process_dataset(dao, dao.get_tweets('joy'), 'joy_tweets')
     sadness_words, sadness_hashtags, sadness_emojis, sadness_emoticons = \
-        process_dataset(dao.get_tweets('sadness'), 'sadness_tweets')
+        process_dataset(dao, dao.get_tweets('sadness'), 'sadness_tweets')
     surprise_words, surprise_hashtags, surprise_emojis, surprise_emoticons = \
-        process_dataset(dao.get_tweets('surprise'), 'surprise_tweets')
+        process_dataset(dao, dao.get_tweets('surprise'), 'surprise_tweets')
     trust_words, trust_hashtags, trust_emojis, trust_emoticons = \
-        process_dataset(dao.get_tweets('trust'), 'trust_tweets')
+        process_dataset(dao, dao.get_tweets('trust'), 'trust_tweets')
 
     emoji_datasets = [anger_emojis, anticipation_emojis, disgust_emojis, fear_emojis, joy_emojis, sadness_emojis,
                       surprise_emojis, trust_emojis]
@@ -249,7 +264,13 @@ def quickstart(dao: Dao):
     dao.build_sentiments(word_datasets, emoji_datasets, emoticons_datasets)
 
     if input("Do you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
-        create_definitions(word_datasets, dao)
+        create_definitions(word_datasets, dao)  # toml files
+    if dao.is_mongodb():
+        dump_definitions_mongodb()
+    else:
+        dao.dump_definitions()
+
+    if dao.is_mongodb():
         if input("Do you want to create results for the words? [y/N] ").lower() == "y":
             create_word_final_result(dao)
 

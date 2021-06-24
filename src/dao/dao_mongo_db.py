@@ -36,7 +36,6 @@ class DaoMongoDB:
         for index, sentiment in enumerate(sentiments):
             tweet_document = self.database[f'{sentiment}_tweets']
             self.__insert_tweets(tweet_document, twitter_paths[index], sentiment)
-            # TODO: add words to correct sentiment
             word_document = self.database[f'{sentiment}_words']
             self.__insert_words(word_document, words, index)
             emoji_document = self.database[f'{sentiment}_emoji']
@@ -66,8 +65,8 @@ class DaoMongoDB:
             tweet_dict[f'{sentiment}_{key}'] = line
         tweet_document.insert(tweet_dict)
 
-    def build_sentiments(self, word_datasets, emoji_datasets, emoticon_datasets):
-        sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
+    def build_sentiments(self, sentiments, word_datasets, emoji_datasets, emoticon_datasets):
+        # sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
         to_add_words, to_add_emojis, to_add_emoticons = {}, {}, {}
         for index, sentiment in enumerate(sentiments):
             to_add_words[sentiment] = word_datasets[index]
@@ -140,7 +139,7 @@ class DaoMongoDB:
         final_list = {}
         for sentiment in sentiments:
             if sentiment in count:
-                final_list[sentiment] = count[sentiment] / self.__get_word_numbers(sentiment)
+                final_list[sentiment] = round(count[sentiment] / self.__get_word_numbers(sentiment), 4)
         return final_list
 
     def dump_definitions(self, definitions: dict, name: str):

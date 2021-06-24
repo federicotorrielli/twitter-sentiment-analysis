@@ -23,6 +23,20 @@ def _execute_statement(cursor, statement: str, params: [] = None):
     return cursor
 
 
+def _executemany_statements(cursor, statement: str, params: [] = None):
+    try:
+        if params is None:
+            cursor.execute(statement)
+        else:
+            cursor.executemany(statement, params)
+    except MySQLError as error:
+        print(f"Error: {error}", file=sys.stderr)
+    finally:
+        print(f"\tstatement: {cursor._last_executed}")
+
+    return cursor
+
+
 class DaoMySQLDB:
     def __init__(self):
         """ Relational DB auth """
@@ -85,6 +99,9 @@ class DaoMySQLDB:
                 _execute_statement(cursor, "DROP TABLE IF EXISTS `word_in_tweet`")
                 _execute_statement(cursor, "DROP TABLE IF EXISTS `emoticon_in_tweet`")
                 _execute_statement(cursor, "DROP TABLE IF EXISTS `emoji_in_tweet`")
+                _execute_statement(cursor, "DROP TABLE IF EXISTS `word_in_sentiment`")
+                _execute_statement(cursor, "DROP TABLE IF EXISTS `emoticon_in_sentiment`")
+                _execute_statement(cursor, "DROP TABLE IF EXISTS `emoji_in_sentiment`")
                 connection.commit()
 
                 _execute_statement(cursor, "DROP TABLE IF EXISTS `sentiment`")
@@ -149,13 +166,35 @@ class DaoMySQLDB:
                                            "ON DELETE CASCADE ON UPDATE CASCADE)")
                 connection.commit()
 
-                _execute_statement(cursor, "CREATE TABLE `appears_in` ("
+                _execute_statement(cursor, "CREATE TABLE `word_in_sentiment` ("
                                            "`sentiment_id` int NOT NULL,"
-                                           "`word_id` int NOT NULL,"
+                                           "`token_id` int NOT NULL,"
                                            "`count` int NOT NULL DEFAULT -1,"
                                            "`freq_perc` float NOT NULL DEFAULT -1,"
-                                           "PRIMARY KEY(`sentiment_id`,`word_id`),"
-                                           "FOREIGN KEY (`word_id`) REFERENCES `word` (`id`) "
+                                           "PRIMARY KEY(`sentiment_id`,`token_id`),"
+                                           "FOREIGN KEY (`token_id`) REFERENCES `word` (`id`) "
+                                           "ON DELETE CASCADE ON UPDATE CASCADE,"
+                                           "FOREIGN KEY (`sentiment_id`) REFERENCES `sentiment` (`id`) "
+                                           "ON DELETE CASCADE ON UPDATE CASCADE)")
+                connection.commit()
+
+                _execute_statement(cursor, "CREATE TABLE `emoji_in_sentiment` ("
+                                           "`sentiment_id` int NOT NULL,"
+                                           "`token_id` int NOT NULL,"
+                                           "`count` int NOT NULL DEFAULT -1,"
+                                           "PRIMARY KEY(`sentiment_id`,`token_id`),"
+                                           "FOREIGN KEY (`token_id`) REFERENCES `emoji` (`id`) "
+                                           "ON DELETE CASCADE ON UPDATE CASCADE,"
+                                           "FOREIGN KEY (`sentiment_id`) REFERENCES `sentiment` (`id`) "
+                                           "ON DELETE CASCADE ON UPDATE CASCADE)")
+                connection.commit()
+
+                _execute_statement(cursor, "CREATE TABLE `emoticon_in_sentiment` ("
+                                           "`sentiment_id` int NOT NULL,"
+                                           "`token_id` int NOT NULL,"
+                                           "`count` int NOT NULL DEFAULT -1,"
+                                           "PRIMARY KEY(`sentiment_id`,`token_id`),"
+                                           "FOREIGN KEY (`token_id`) REFERENCES `emoticon` (`id`) "
                                            "ON DELETE CASCADE ON UPDATE CASCADE,"
                                            "FOREIGN KEY (`sentiment_id`) REFERENCES `sentiment` (`id`) "
                                            "ON DELETE CASCADE ON UPDATE CASCADE)")
@@ -164,7 +203,7 @@ class DaoMySQLDB:
                 _execute_statement(cursor, "CREATE TABLE `word_in_tweet` ("
                                            "`tweet_id` int NOT NULL, "
                                            "`token_id` int NOT NULL,"
-                                           "`type` SET('word','emoji','emoticon') NOT NULL,"
+                                           "`count` int NOT NULL DEFAULT -1,"
                                            "PRIMARY KEY(`tweet_id`,`token_id`),"
                                            "FOREIGN KEY (`token_id`) REFERENCES `word` (`id`) "
                                            "ON DELETE CASCADE ON UPDATE CASCADE,"
@@ -175,7 +214,7 @@ class DaoMySQLDB:
                 _execute_statement(cursor, "CREATE TABLE `emoticon_in_tweet` ("
                                            "`tweet_id` int NOT NULL, "
                                            "`token_id` int NOT NULL,"
-                                           "`type` SET('word','emoji','emoticon') NOT NULL,"
+                                           "`count` int NOT NULL DEFAULT -1,"
                                            "PRIMARY KEY(`tweet_id`,`token_id`),"
                                            "FOREIGN KEY (`token_id`) REFERENCES `emoticon` (`id`) "
                                            "ON DELETE CASCADE ON UPDATE CASCADE,"
@@ -186,7 +225,7 @@ class DaoMySQLDB:
                 _execute_statement(cursor, "CREATE TABLE `emoji_in_tweet` ("
                                            "`tweet_id` int NOT NULL, "
                                            "`token_id` int NOT NULL,"
-                                           "`type` SET('word','emoji','emoticon') NOT NULL,"
+                                           "`count` int NOT NULL DEFAULT -1,"
                                            "PRIMARY KEY(`tweet_id`,`token_id`),"
                                            "FOREIGN KEY (`token_id`) REFERENCES `emoji` (`id`) "
                                            "ON DELETE CASCADE ON UPDATE CASCADE,"
@@ -276,23 +315,13 @@ class DaoMySQLDB:
                 cursor.execute("SET CHARACTER SET utf8mb4")
                 cursor.execute("SET character_set_connection=utf8mb4")
 
-                sql_word = "INSERT INTO `word` (`word`, `slang`, `meaning`) VALUES (%s, %s, %s) "
+                sql_word = "INSERT INTO `word` (`word`) VALUES (%s) "
                 sql_belongs_to = "INSERT INTO `belongs_to`(`sentiment_id`, `word_id`) VALUES (%s, %s)"
                 sql_belongs_to_params = []
 
                 first_insertion = True
                 for word in sentiments_words:
-                    # find word definition
-                    is_slang = 0
-                    definition = check_word_existence(word, standard_toml_files)
-                    if definition == "":
-                        definition = check_word_existence(word, slang_toml_files)
-                        is_slang = definition != ""
-                        definition = "NOTHING FOUND" if definition == "" else definition
-
-                    definition = (definition[:1021] + '...') if len(definition) > 1024 else definition
-
-                    _execute_statement(cursor, sql_word, [word, is_slang, definition])
+                    _execute_statement(cursor, sql_word, [word])
                     id_word = cursor.lastrowid
 
                     for index, sentiment in enumerate(sentiments_words[word]):
@@ -311,6 +340,41 @@ class DaoMySQLDB:
                 print(f"{len(sentiments_words)} words added")
                 print(f"{sum([len(sentiments_words[k]) for k in sentiments_words])} relations added")
 
+    def dump_definitions(self):
+        """
+        Dumps all the definitions in 'word' table
+        """
+        standard_toml_files = preparse_standard_toml_files()
+        slang_toml_files = preparse_slang_toml_files()
+        with self.__connect_db() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute('SET NAMES utf8mb4')
+                cursor.execute("SET CHARACTER SET utf8mb4")
+                cursor.execute("SET character_set_connection=utf8mb4")
+
+                words = {}
+                res = _execute_statement(cursor, f"SELECT `id`, `word` FROM `word`").fetchall()
+                for t in res:
+                    words[t["word"]] = t["id"]
+
+                sql_update_words = "UPDATE `word` SET `meaning` = %s, `slang` = %s WHERE `id` = %s"
+                sql_params = []
+
+                for word in words:
+                    # find word definition
+                    is_slang = 0
+                    definition = check_word_existence(word, standard_toml_files)
+                    if definition == "":
+                        definition = check_word_existence(word, slang_toml_files)
+                        is_slang = definition != ""
+                        definition = "NOTHING FOUND" if definition == "" else definition
+
+                    definition = (definition[:1021] + '...') if len(definition) > 1024 else definition
+                    sql_params += [(definition, is_slang, words[word])]
+
+                _executemany_statements(cursor, sql_update_words, sql_params)
+                connection.commit()
+
     def __insert_tweets_sentiments(self, sentiments_tweets):
         """
         Inserts records into 'twitter_message' table and relations with 'sentiment' table
@@ -328,8 +392,8 @@ class DaoMySQLDB:
                     sql_assign_sentiment_params = []
                     first_sentiment_tweet = True
 
-                    id_sentiment = _execute_statement(cursor, f"SELECT id FROM `sentiment` "
-                                                              f"WHERE `type` = \'{sentiment}\'").fetchone()[0]
+                    id_sentiment = _execute_statement(cursor, f"SELECT `id` FROM `sentiment` "
+                                                              f"WHERE `type` = \'{sentiment}\'").fetchone()["id"]
                     assert id_sentiment >= 1
 
                     for tweet in sentiments_tweets[sentiment]:
@@ -348,12 +412,11 @@ class DaoMySQLDB:
                     _execute_statement(cursor, sql_assign_sentiment, sql_assign_sentiment_params)
                     connection.commit()
 
-    def get_definition(self, word: str, sentiment: str = "") -> str:
+    def get_definition(self, word: str) -> str:
         """
         Given a word it returns the correct definition, given that
         it is already stored on the database
         @param word: the word to search the definition for
-        @param sentiment: not needed
         @return: the definition of the word
         """
         definition = "NOTHING FOUND"
@@ -370,13 +433,12 @@ class DaoMySQLDB:
         @param word: the word or emoji you are trying to find
         @return: the number of times that word appeared for every sentiment (a dict)
         """
-        # TODO: change query
         counts = {}
         with self.__connect_db() as connection:
             with connection.cursor() as cursor:
                 sql = "SELECT `type`, `count` " \
-                      "FROM `sentiment` LEFT JOIN `belongs_to` ON `sentiment_id` = `id` " \
-                      "WHERE `word_id` = (SELECT `id` FROM `word` WHERE `word` = %s)"
+                      "FROM `sentiment` LEFT JOIN `word_in_sentiment` ON `sentiment_id` = `id` " \
+                      "WHERE `token_id` = (SELECT `id` FROM `word` WHERE `word` = %s)"
                 cursor = _execute_statement(cursor, sql, [word])
                 for t in cursor.fetchall():
                     counts[t["type"]] = t["count"]
@@ -398,7 +460,7 @@ class DaoMySQLDB:
                 counts = res["c"] if res else counts
         return counts
 
-    def get_popularity(self, word: str, count: dict = None) -> dict:
+    def get_popularity(self, word: str, count: dict = None, sentiment_word_numbers: dict = None) -> dict:
         """
         Given the word it returns a dict containing all the
         popularity percentages for every sentiment. If a count (dict)
@@ -406,15 +468,25 @@ class DaoMySQLDB:
         server and query the database every time
         @param word: the word to get the popularity from
         @param count: the count dict, see get_count(...)
+        @param sentiment_word_numbers: dict that contains words counting per sentiment
         @return: a dict of all the percentages for every sentiment
         """
+        # TODO: what if the word belongs to no sentiment?
         if count is None:
             count = self.get_count(word)
 
         popularities = {}
+        if sentiment_word_numbers is None:
+            sentiment_word_numbers = {}
         for sentiment in count:
-            popularities[sentiment] = count[sentiment] / self.__get_word_numbers(sentiment)
+            if sentiment not in sentiment_word_numbers:
+                sentiment_word_numbers[sentiment] = self.__get_word_numbers(sentiment)
+            # popularities[sentiment] = count[sentiment] / sentiment_word_numbers[sentiment]
+            popularities[sentiment] = self.__calculate_popularity(count[sentiment], self.__get_word_numbers(sentiment))
         return popularities
+
+    def __calculate_popularity(self, count, sentiment_tot):
+        return round(count / sentiment_tot, 4)
 
     def get_tweets(self, sentiment: str):
         """
@@ -435,37 +507,243 @@ class DaoMySQLDB:
                     tweets[t["id"]] = t["tweet_content"]
         return tweets
 
-    def get_counts(self, sentiment: str):
+    def get_tokens(self, token_type: str):
         """
-        Gets the dict of frequencies of type {item: count}
+        Gets all tokens of type
+        @param token_type: possibile values "word", "emoji" or "emoticon"
+        @return: dict {"token": id}
+        """
+        token_type = token_type.lower()
+        tokens = {}
+        with self.__connect_db() as connection:
+            with connection.cursor() as cursor:
+                sql = f"SELECT `id`, `{token_type}` " \
+                      f"FROM `{token_type}` "
+                cursor = _execute_statement(cursor, sql)
+                for t in cursor.fetchall():
+                    tokens[t[f"{token_type}"]] = t["id"]
+        return tokens
+
+    def add_tweets_tokens(self, tweets_tokens: {}):
+        """
+        Inserts the connection between tweets and tokens
+        @param tweets_tokens: {tweet_id: [tokens]...}
+        """
+        # TODO: remove symbols and what is not a token we need (like "i'm")
+        # TODO: manage new tokens
+        list_word = self.get_tokens("word")
+        list_emoji = self.get_tokens("emoji")
+        list_emoticon = self.get_tokens("emoticon")
+
+        # data_token = {tweet_id: {token_id: count,...},...}
+        data_word = {}
+        data_emoji = {}
+        data_emoticon = {}
+
+        for tweet_id in tweets_tokens:
+            for token in tweets_tokens[tweet_id]:
+                token = token.lower()
+                if token in list_word:
+                    if tweet_id not in data_word or list_word[token] not in data_word[tweet_id]:
+                        if tweet_id not in data_word:
+                            data_word[tweet_id] = {}
+                        data_word[tweet_id][list_word[token]] = 1
+                    else:
+                        data_word[tweet_id][list_word[token]] += 1
+
+                elif token in list_emoji:
+                    if tweet_id not in data_emoji or list_emoji[token] not in data_emoji[tweet_id]:
+                        if tweet_id not in data_emoji:
+                            data_emoji[tweet_id] = {}
+                        data_emoji[tweet_id][list_emoji[token]] = 1
+                    else:
+                        data_emoji[tweet_id][list_emoji[token]] += 1
+
+                elif token in list_emoticon:
+                    if tweet_id not in data_emoticon or list_emoticon[token] not in data_emoticon[tweet_id]:
+                        if tweet_id not in data_emoticon:
+                            data_emoticon[tweet_id] = {}
+                        data_emoticon[tweet_id][list_emoticon[token]] = 1
+                    else:
+                        data_emoticon[tweet_id][list_emoticon[token]] += 1
+
+        data_to_insert = {
+            "word": data_word,
+            "emoji": data_emoji,
+            "emoticon": data_emoticon
+        }
+        self.insert_tweets_tokens(data_to_insert)
+
+    def insert_tweets_tokens(self, data_to_insert: {}):
+        """
+        Inserts the connection between tweets and tokens
+        @param data_to_insert: {token_type: {tweet_id: {token_id: count,...},...},...}
+        """
+        for token_type in data_to_insert:
+            with self.__connect_db() as connection:
+                with connection.cursor() as cursor:
+                    if len(data_to_insert[token_type]) > 0:
+                        for tweet_id in data_to_insert[token_type]:
+                            sql = f"INSERT INTO `{token_type}_in_tweet` " \
+                                  f"(`tweet_id`, `token_id`, `count`) VALUES (%s, %s, %s)"
+                            sql_params = []
+                            first_insert = True
+                            for token_id in data_to_insert[token_type][tweet_id]:
+
+                                if not first_insert:
+                                    sql += ", (%s, %s, %s)"
+                                else:
+                                    first_insert = False
+                                sql_params += [tweet_id, token_id, data_to_insert[token_type][tweet_id][token_id]]
+                                # assert sql.count("%s") == len(sql_params)
+                            _execute_statement(cursor, sql, sql_params)
+                        connection.commit()
+
+    def get_counts(self, sentiment: str, token_type: str):
+        """
+        Gets the dict of counts of type {item: count}
         where the number is monotonic and generated during the building
         of the database
         @param sentiment: document name
+        @param token_type: token category
         @return: dict {item: count}
         """
-        # TODO: comment
-        # TODO: wrong
-        frequencies = {}
+        return self.__get_counts_or_frequencies(True, sentiment, token_type)
+
+    def get_frequencies(self, sentiment: str, token_type: str):
+        """
+        Gets the dict of frequencies of type {item: frequency}
+        where the number is monotonic and generated during the building
+        of the database
+        @param sentiment: document name
+        @param token_type: token category
+        @return: dict {item: count}
+        """
+        return self.__get_counts_or_frequencies(False, sentiment, token_type)
+
+    def __get_counts_or_frequencies(self, counts: bool, sentiment: str, token_type: str):
+        """
+        Gets the dict of counts/frequencies of type {item: count/frequency}
+        where the number is monotonic and generated during the building
+        of the database
+        @param counts: get tokens' counter if true, otherwise tokens' frequency
+        @param sentiment: document name
+        @param token_type: token category
+        @return: dict {item: count}
+        """
+        param = "count" if counts else "freq_perc"
+        data = {}
         with self.__connect_db() as connection:
             with connection.cursor() as cursor:
                 """ TODO: """
-                # sql = "SELECT `id`, `tweet_content` " \
-                #       "FROM `twitter_message` LEFT JOIN `labelled` on `id` = `tweet_id` " \
-                #       "WHERE `sentiment_id` = (SELECT `id` FROM `sentiment` WHERE `type` = %s)"
-                # cursor = _execute_statement(cursor, sql, [sentiment])
-                # for t in cursor.fetchall():
-                #     tweets[t["id"]] = t["tweet_content"]
-        return frequencies
+                sql = f"SELECT `{token_type}`, `{param}` " \
+                      f"FROM `{token_type}` LEFT JOIN `{token_type}_in_sentiment` on `id` = `token_id` " \
+                      f"WHERE `sentiment_id` = (SELECT `id` FROM `sentiment` WHERE `type` = %s)"
+                cursor = _execute_statement(cursor, sql, [sentiment])
+                for t in cursor.fetchall():
+                    data[t[f"{token_type}"]] = t[f"{param}"]
+        return data
 
     def build_sentiments(self, sentiments, word_datasets, emoji_datasets, emoticon_datasets):
         """
-
+        Puts in the db the different datasets built in natural
+        @param sentiments: array of sentiments
+        @param word_datasets: a list of dicts for every word_frequency sentiment
+        @param emoji_datasets: a list of dicts for every emoji_frequency sentiment
+        @param emoticon_datasets: a list of dicts for every emoticon_frequency sentiment
         """
-        # TODO:
-        # for index, sentiment in enumerate(sentiments):
-        #     word_table = self.database[f'{sentiment}_words_frequency']
-        #     emoji_table = self.database[f'{sentiment}_emoji_frequency']
-        #     emoticon_table = self.database[f'{sentiment}_emoticon_frequency']
-        #     word_table.insert(word_datasets[index], check_keys=False)
-        #     emoji_table.insert(emoji_datasets[index], check_keys=False)
-        #     emoticon_table.insert(emoticon_datasets[index], check_keys=False)
+        list_word = self.get_tokens("word")
+        list_emoji = self.get_tokens("emoji")
+        list_emoticon = self.get_tokens("emoticon")
+        sentiments_count = {sentiment: self.__get_word_numbers(sentiment) for sentiment in sentiments}
+
+        for index, sentiment in enumerate(sentiments):
+            with self.__connect_db() as connection:
+                with connection.cursor() as cursor:
+                    cursor.execute('SET NAMES utf8mb4')
+                    cursor.execute("SET CHARACTER SET utf8mb4")
+                    cursor.execute("SET character_set_connection=utf8mb4")
+
+                    id_sentiment = _execute_statement(cursor, f"SELECT `id` FROM `sentiment` "
+                                                              f"WHERE `type` = \'{sentiment}\'").fetchone()["id"]
+                    assert id_sentiment >= 1
+
+                    sql_intert = "INSERT INTO `word_in_sentiment` (`count`, `sentiment_id`, `token_id`, `freq_perc`) " \
+                                 "VALUES (%s, %s, %s, %s)"
+                    sql_params = []
+                    for word in word_datasets[index]:
+                        if word in list_word:
+                            sql_params += [(word_datasets[index][word],
+                                            id_sentiment,
+                                            list_word[word],
+                                            self.__calculate_popularity(word_datasets[index][word],
+                                                                       sentiments_count[sentiment]))]
+                    if sql_params is not []:
+                        _executemany_statements(cursor, sql_intert, sql_params)
+                        connection.commit()
+
+                    sql_intert = "INSERT INTO `emoji_in_sentiment` (`count`, `sentiment_id`, `token_id`) " \
+                                 "VALUES (%s, %s, %s)"
+                    sql_params = []
+                    for emoji in emoji_datasets[index]:
+                        if emoji in list_emoji:
+                            sql_params += [(word_datasets[index][word], id_sentiment, list_emoji[emoji])]
+                    if sql_params is not []:
+                        _executemany_statements(cursor, sql_intert, sql_params)
+                        connection.commit()
+
+                    sql_intert = "INSERT INTO `emoticon_in_sentiment` (`count`, `sentiment_id`, `token_id`) " \
+                                 "VALUES (%s, %s, %s)"
+                    sql_params = []
+                    for emoticon in emoticon_datasets[index]:
+                        if emoticon in list_emoticon:
+                            sql_params += [(word_datasets[index][word], id_sentiment, list_emoticon[emoticon])]
+                    if sql_params is not []:
+                        _executemany_statements(cursor, sql_intert, sql_params)
+                        connection.commit()
+
+        # self.__insert_words_freq(sentiments, word_datasets)
+
+    def get_result(self, word: str) -> dict:
+        """
+        Gets a result dict, given the word (see push_results(...))
+        @param word: the word to get the result dict from
+        @return: the result dict
+        """
+        word = word.lower()
+        result = {}
+        with self.__connect_db() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute('SET NAMES utf8mb4')
+                cursor.execute("SET CHARACTER SET utf8mb4")
+                cursor.execute("SET character_set_connection=utf8mb4")
+
+                sql = "SELECT * FROM `word` WHERE `word` = %s"
+                res = _execute_statement(cursor, sql, [word]).fetchone()
+                if res:
+                    result["word"] = word
+                    result["id"] = res["id"]
+                    result["slang"] = True if res["slang"] == 0 else False
+                    result["definition"] = res["meaning"]
+                    result["count"] = {}
+                    result["popularity"] = {}
+
+                    sql = "SELECT `sentiment_id`, `type`, `count`, `freq_perc` " \
+                          "FROM `word_in_sentiment` RIGHT JOIN `sentiment` ON `sentiment_id` = `id` " \
+                          "WHERE `token_id` = %s " \
+                          "GROUP BY `sentiment_id`"
+                    res = _execute_statement(cursor, sql, [result["id"]])
+                    if res is not None:
+                        for t in res.fetchall():
+                            result["count"][t["type"]] = t["count"]
+                            result["popularity"][t["type"]] = t["freq_perc"]
+
+        return result
+
+
+if __name__ == '__main__':
+    """ 
+    Tests
+    """
+    db = DaoMySQLDB()
+    print(db.get_result("hello"))
