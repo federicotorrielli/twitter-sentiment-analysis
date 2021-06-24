@@ -38,10 +38,14 @@ def test_query(db_type="MongoDB"):
 
 
 if __name__ == '__main__':
-    # dao = start_comparison("MongoDB")
-    dao2 = start_comparison("MySQL")
-    test_query()
+    dao = start_comparison("MongoDB")
+    # dao2 = start_comparison("MySQL")
 
-    # if input("Do you want to generate the Wordclouds? This could take 10 minutes or more! [y/N] ").lower() == "y":
-    #     wordcl = WordCloudCreator(dao)
-    #     wordcl.generate()
+    test_query()
+    test_query("MySQL")
+
+    # TODO: Wordclouds from MySQL too
+    if input("Do you want to generate the Wordclouds? This could take 10 minutes or more! [y/N] ").lower() == "y":
+        wordcl = WordCloudCreator(dao)
+        wordcl.generate()
+
