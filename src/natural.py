@@ -32,13 +32,16 @@ def clean_emoticons(phrase: str):
 def process_phrase(phrase: str, stopword_list: set):
     """
     Given a phrase and the stopwords list, it tokenizes the phrase removing the stopwords.
+    Plus, we remove useless words (with "_" and "USERNAME" in it)
     @param phrase: sentence to be tokenized
     @param  stopword_list:
     @return: the tokenized phrase
     """
     clean_phrase, emote_list = clean_emoticons(phrase)
     tokenized = tokenizer.tokenize(clean_phrase)
-    final_phrase = [word for word in tokenized if word not in stopword_list and "_" not in word] + emote_list
+    final_phrase = [word for word in tokenized if word not in stopword_list
+                    and "_" not in word
+                    and "USERNAME" not in word] + emote_list
     return final_phrase
 
 
