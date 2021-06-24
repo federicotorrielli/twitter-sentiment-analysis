@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+import pprint
+
 import pymongo
 from src.file_manager import read_file
 from bson.code import Code
@@ -139,7 +141,7 @@ class DaoMongoDB:
         final_list = {}
         for sentiment in sentiments:
             if sentiment in count:
-                final_list[sentiment] = count[sentiment] / self.__get_word_numbers(sentiment)
+                final_list[sentiment] = round(count[sentiment] / self.__get_word_numbers(sentiment), 4)
         return final_list
 
     def dump_definitions(self, definitions: dict, name: str):
