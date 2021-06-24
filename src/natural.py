@@ -12,7 +12,7 @@ from dao.dao import Dao
 from file_manager import read_file
 from lexical_glob import get_lexical_filenames, get_lexical_Nlines
 from set_classification import negemoticons, posemoticons, twitter_stopwords
-from src.slang import create_definitions
+from src.slang import create_definitions, preparse_standard_toml_files, preparse_slang_toml_files
 
 tokenizer = TweetTokenizer()
 
@@ -248,7 +248,11 @@ def quickstart(dao: Dao):
     dao.build_sentiments(word_datasets, emoji_datasets, emoticons_datasets)
 
     if input("Do you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
-        create_definitions(word_datasets, dao)
+        create_definitions(word_datasets, dao)  # toml files
+    if not dao.is_mongodb():
+        dao.dump_definitions()
+
+    if dao.is_mongodb():
         if input("Do you want to create results for the words? [y/N] ").lower() == "y":
             create_word_final_result(dao)
 

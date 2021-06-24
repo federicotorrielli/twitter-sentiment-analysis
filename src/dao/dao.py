@@ -20,6 +20,9 @@ class Dao:
         self.type_db = type_db
         self.sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
 
+    def is_mongodb(self):
+        return not self.type_db
+
     def build_db(self):
         """
         Builds the DB
@@ -63,7 +66,10 @@ class Dao:
         @param definitions: a dict containing tuples {word: definition}, not needed in MySQL
         @param name: the name of the table/document to put it in, not needed in MySQL
         """
-        self.dao_type.dump_definitions(definitions, name)
+        if self.type_db:
+            self.dao_type.dump_definitions()
+        else:
+            self.dao_type.dump_definitions(definitions, name)
 
     def get_definition(self, word: str, sentiment: str = "") -> str:
         """
@@ -73,7 +79,10 @@ class Dao:
         @param sentiment: (optional) the sentiment to search it for
         @return: the definition of the word
         """
-        return self.dao_type.get_definition(word.lower(), sentiment.lower())
+        if self.type_db:
+            return self.dao_type.get_definition(word.lower())
+        else:
+            return self.dao_type.get_definition(word.lower(), sentiment.lower())
 
     def get_count(self, word: str) -> dict:
         """
@@ -93,7 +102,10 @@ class Dao:
         @param count: the count dict, see get_count(...)
         @return: a dict of all the percentages for every sentiment
         """
-        return self.dao_type.get_popularity(word.lower(), count)
+        if self.type_db:
+            return self.dao_type.get_popularity(word.lower(), count)
+        else:
+            return self.dao_type.get_popularity(word.lower(), count)
 
     def push_result(self, word: str, count: dict, definition: str, popularity: dict):
         """
@@ -130,7 +142,6 @@ class Dao:
         @param index: The index / attribute to create
         @param table: The table / document to put the index on
         """
-        # TODO: do it in dao_mysql_db, think it's not neccessary in MySQL
         self.dao_type.create_index(index, table)
 
     def add_tweets_tokens(self, tweets_tokens: dict):

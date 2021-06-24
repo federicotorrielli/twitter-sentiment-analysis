@@ -340,11 +340,9 @@ class DaoMySQLDB:
                 print(f"{len(sentiments_words)} words added")
                 print(f"{sum([len(sentiments_words[k]) for k in sentiments_words])} relations added")
 
-    def dump_definitions(self, definitions: dict = {}, name: str = ""):
+    def dump_definitions(self):
         """
-        Dumps all the definitions in the correct @name table/document
-        @param definitions: a dict containing tuples {word: definition}, not needed in MySQL
-        @param name: the name of the table/document to put it in, not needed in MySQL
+        Dumps all the definitions in 'word' table
         """
         standard_toml_files = preparse_standard_toml_files()
         slang_toml_files = preparse_slang_toml_files()
@@ -414,12 +412,11 @@ class DaoMySQLDB:
                     _execute_statement(cursor, sql_assign_sentiment, sql_assign_sentiment_params)
                     connection.commit()
 
-    def get_definition(self, word: str, sentiment: str = "") -> str:
+    def get_definition(self, word: str) -> str:
         """
         Given a word it returns the correct definition, given that
         it is already stored on the database
         @param word: the word to search the definition for
-        @param sentiment: not needed in MySQL
         @return: the definition of the word
         """
         definition = "NOTHING FOUND"
@@ -440,8 +437,8 @@ class DaoMySQLDB:
         with self.__connect_db() as connection:
             with connection.cursor() as cursor:
                 sql = "SELECT `type`, `count` " \
-                      "FROM `sentiment` LEFT JOIN `belongs_to` ON `sentiment_id` = `id` " \
-                      "WHERE `word_id` = (SELECT `id` FROM `word` WHERE `word` = %s)"
+                      "FROM `sentiment` LEFT JOIN `word_in_sentiment` ON `sentiment_id` = `id` " \
+                      "WHERE `token_id` = (SELECT `id` FROM `word` WHERE `word` = %s)"
                 cursor = _execute_statement(cursor, sql, [word])
                 for t in cursor.fetchall():
                     counts[t["type"]] = t["count"]
@@ -463,7 +460,7 @@ class DaoMySQLDB:
                 counts = res["c"] if res else counts
         return counts
 
-    def get_popularity(self, word: str, count: dict = None) -> dict:
+    def get_popularity(self, word: str, count: dict = None, sentiment_word_numbers: dict = None) -> dict:
         """
         Given the word it returns a dict containing all the
         popularity percentages for every sentiment. If a count (dict)
@@ -471,15 +468,25 @@ class DaoMySQLDB:
         server and query the database every time
         @param word: the word to get the popularity from
         @param count: the count dict, see get_count(...)
+        @param sentiment_word_numbers: dict that contains words counting per sentiment
         @return: a dict of all the percentages for every sentiment
         """
+        # TODO: what if the word belongs to no sentiment?
         if count is None:
             count = self.get_count(word)
 
         popularities = {}
+        if sentiment_word_numbers is None:
+            sentiment_word_numbers = {}
         for sentiment in count:
-            popularities[sentiment] = count[sentiment] / self.__get_word_numbers(sentiment)
+            if sentiment not in sentiment_word_numbers:
+                sentiment_word_numbers[sentiment] = self.__get_word_numbers(sentiment)
+            # popularities[sentiment] = count[sentiment] / sentiment_word_numbers[sentiment]
+            popularities[sentiment] = self.__calculate_popularity(count[sentiment], self.__get_word_numbers(sentiment))
         return popularities
+
+    def __calculate_popularity(self, count, sentiment_tot):
+        return count / sentiment_tot
 
     def get_tweets(self, sentiment: str):
         """
@@ -592,16 +599,15 @@ class DaoMySQLDB:
                             _execute_statement(cursor, sql, sql_params)
                         connection.commit()
 
-    def get_counts(self, sentiment: str, token_type: str = ""):
+    def get_counts(self, sentiment: str, token_type: str):
         """
         Gets the dict of counts of type {item: count}
         where the number is monotonic and generated during the building
         of the database
         @param sentiment: document name
-        @param token_type: token category, not needed in MySQL
+        @param token_type: token category
         @return: dict {item: count}
         """
-        # TODO: test
         return self.__get_counts_or_frequencies(True, sentiment, token_type)
 
     def get_frequencies(self, sentiment: str, token_type: str):
@@ -613,7 +619,6 @@ class DaoMySQLDB:
         @param token_type: token category
         @return: dict {item: count}
         """
-        # TODO: test
         return self.__get_counts_or_frequencies(False, sentiment, token_type)
 
     def __get_counts_or_frequencies(self, counts: bool, sentiment: str, token_type: str):
@@ -647,12 +652,10 @@ class DaoMySQLDB:
         @param emoji_datasets: a list of dicts for every emoji_frequency sentiment
         @param emoticon_datasets: a list of dicts for every emoticon_frequency sentiment
         """
-        # TODO: remove words like "i'm"
-        # TODO: test
         list_word = self.get_tokens("word")
-        freq_words = {word: self.get_popularity(word) for word in list_word}
         list_emoji = self.get_tokens("emoji")
         list_emoticon = self.get_tokens("emoticon")
+        sentiments_count = {sentiment: self.__get_word_numbers(sentiment) for sentiment in sentiments}
 
         for index, sentiment in enumerate(sentiments):
             with self.__connect_db() as connection:
@@ -665,36 +668,41 @@ class DaoMySQLDB:
                                                               f"WHERE `type` = \'{sentiment}\'").fetchone()["id"]
                     assert id_sentiment >= 1
 
-                    sql_update = "UPDATE `word_in_sentiment` SET `count` = %s, `freq_perc` = %s  " \
-                                 "WHERE `sentiment_id` = %s AND `token_id` = %s"
+                    sql_intert = "INSERT INTO `word_in_sentiment` (`count`, `sentiment_id`, `token_id`, `freq_perc`) " \
+                                 "VALUES (%s, %s, %s, %s)"
                     sql_params = []
                     for word in word_datasets[index]:
                         if word in list_word:
-                            sql_params += [(word_datasets[index][word], freq_words[word],
-                                            id_sentiment, list_word[word])]
+                            sql_params += [(word_datasets[index][word],
+                                            id_sentiment,
+                                            list_word[word],
+                                            self.__calculate_popularity(word_datasets[index][word],
+                                                                       sentiments_count[sentiment]))]
                     if sql_params is not []:
-                        _executemany_statements(cursor, sql_update, sql_params)
+                        _executemany_statements(cursor, sql_intert, sql_params)
                         connection.commit()
 
-                    sql_update = "UPDATE `emoji_in_sentiment` SET `count` = %s " \
-                                 "WHERE `sentiment_id` = %s AND `token_id` = %s"
+                    sql_intert = "INSERT INTO `emoji_in_sentiment` (`count`, `sentiment_id`, `token_id`) " \
+                                 "VALUES (%s, %s, %s)"
                     sql_params = []
                     for emoji in emoji_datasets[index]:
                         if emoji in list_emoji:
                             sql_params += [(word_datasets[index][word], id_sentiment, list_emoji[emoji])]
                     if sql_params is not []:
-                        _executemany_statements(cursor, sql_update, sql_params)
+                        _executemany_statements(cursor, sql_intert, sql_params)
                         connection.commit()
 
-                    sql_update = "UPDATE `emoticon_in_sentiment` SET `count` = %s " \
-                                 "WHERE `sentiment_id` = %s AND `token_id` = %s"
+                    sql_intert = "INSERT INTO `emoticon_in_sentiment` (`count`, `sentiment_id`, `token_id`) " \
+                                 "VALUES (%s, %s, %s)"
                     sql_params = []
                     for emoticon in emoticon_datasets[index]:
                         if emoticon in list_emoticon:
                             sql_params += [(word_datasets[index][word], id_sentiment, list_emoticon[emoticon])]
                     if sql_params is not []:
-                        _executemany_statements(cursor, sql_update, sql_params)
+                        _executemany_statements(cursor, sql_intert, sql_params)
                         connection.commit()
+
+        # self.__insert_words_freq(sentiments, word_datasets)
 
     def get_result(self, word: str) -> dict:
         """

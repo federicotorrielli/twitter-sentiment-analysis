@@ -36,7 +36,6 @@ class DaoMongoDB:
         for index, sentiment in enumerate(sentiments):
             tweet_document = self.database[f'{sentiment}_tweets']
             self.__insert_tweets(tweet_document, twitter_paths[index], sentiment)
-            # TODO: add words to correct sentiment
             word_document = self.database[f'{sentiment}_words']
             self.__insert_words(word_document, words, index)
             emoji_document = self.database[f'{sentiment}_emoji']
@@ -160,14 +159,6 @@ class DaoMongoDB:
     def push_results(self, result_list):
         results = self.__get_collection_address("results")
         results.insert_many(result_list)
-
-    def get_tokens(self, token_type: str):
-        """
-        Gets all tokens of type
-        @param token_type: possibile values "word", "emoji" or "emoticon"
-        @return: dict {"token": id}
-        """
-        # TODO:
 
 
 if __name__ == '__main__':

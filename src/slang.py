@@ -52,8 +52,10 @@ def create_definitions(datasets: [], dao):
         dump_toml(f"{get_project_root()}/Resources/definitions/standard_definitions_{dataset_name}.toml",
                   definitions_dict)
         dump_toml(f"{get_project_root()}/Resources/definitions/slang_definitions_{dataset_name}.toml", slang_dict)
-        dao.dump_definitions(definitions_dict, f"standard_definitions_{dataset_name}")
-        dao.dump_definitions(slang_dict, f"slang_definitions_{dataset_name}")
+        # TODO: why should I update meanings upon the db only after building toml files already builded?
+        if dao.is_mongodb():
+            dao.dump_definitions(definitions_dict, f"standard_definitions_{dataset_name}")
+            dao.dump_definitions(slang_dict, f"slang_definitions_{dataset_name}")
         i = i + 1
 
 
