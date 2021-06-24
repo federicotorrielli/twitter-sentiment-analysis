@@ -3,6 +3,7 @@ from timeit import default_timer as timer
 
 from dao.dao import Dao
 from natural import quickstart
+from src.graphs import build_histogram_matplotlib
 from wordcloudgenerator import WordCloudCreator
 
 
@@ -38,14 +39,22 @@ def test_query(db_type="MongoDB"):
 
 
 if __name__ == '__main__':
-    dao = start_comparison("MongoDB")
-    # dao2 = start_comparison("MySQL")
+    # dao = start_comparison("MongoDB")
+    # # dao2 = start_comparison("MySQL")
+    #
+    # test_query()
+    # test_query("MySQL")
+    #
+    # # TODO: Wordclouds from MySQL too
+    # if input("Do you want to generate the Wordclouds? This could take 10 minutes or more! [y/N] ").lower() == "y":
+    #     wordcl = WordCloudCreator(dao)
+    #     wordcl.generate()
 
-    test_query()
-    test_query("MySQL")
-
-    # TODO: Wordclouds from MySQL too
-    if input("Do you want to generate the Wordclouds? This could take 10 minutes or more! [y/N] ").lower() == "y":
-        wordcl = WordCloudCreator(dao)
-        wordcl.generate()
+    # TODO: get data from DBs
+    graph_data = {
+        "anger": 3,
+        "joy": 5,
+        "fear": 1
+    }
+    build_histogram_matplotlib(graph_data, '% words [lex resources] in tweets')
 
