@@ -260,20 +260,21 @@ def quickstart(dao: Dao):
                      surprise_words, trust_words]
     emoticons_datasets = [anger_emoticons, anticipation_emoticons, disgust_emoticons, fear_emoticons, joy_emoticons,
                           sadness_emoticons, surprise_emoticons, trust_emoticons]
-    # TODO: utilizzare hashtag
-    dao.build_sentiments(word_datasets, emoji_datasets, emoticons_datasets)
+    hashtag_datasets = [anger_hashtags, anticipation_hashtags, disgust_hashtags, fear_hashtags, joy_hashtags,
+                        sadness_hashtags, surprise_hashtags, trust_hashtags]
+
+    dao.build_sentiments(word_datasets, emoji_datasets, emoticons_datasets)  # TODO: add hashtags to build_sentiments
 
     if input("Do you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
         create_definitions(word_datasets, dao)  # toml files
-    if dao.is_mongodb():
-        dump_definitions_mongodb()
-    else:
-        dao.dump_definitions()
-
-    if dao.is_mongodb():
-        if input("Do you want to create results for the words? [y/N] ").lower() == "y":
-            create_word_final_result(dao)
+        if dao.is_mongodb():
+            dump_definitions_mongodb()
+        else:
+            dao.dump_definitions()
+        if dao.is_mongodb():
+            if input("Do you want to create results for the words? [y/N] ").lower() == "y":
+                create_word_final_result(dao)
 
     shared_words = check_shared_words(word_datasets)
     perc_calc = calc_perc_sharedwords(shared_words, word_datasets)
-    pprint(perc_calc)  # TODO: maybe we can store these percentages?
+    pprint(perc_calc)
