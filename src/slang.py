@@ -52,10 +52,10 @@ def create_definitions(datasets: [], dao):
         dump_toml(f"{get_project_root()}/Resources/definitions/standard_definitions_{dataset_name}.toml",
                   definitions_dict)
         dump_toml(f"{get_project_root()}/Resources/definitions/slang_definitions_{dataset_name}.toml", slang_dict)
-        # TODO: why should I update meanings upon the db only after building toml files already builded?
-        if dao.is_mongodb():
-            dao.dump_definitions(definitions_dict, f"standard_definitions_{dataset_name}")
-            dao.dump_definitions(slang_dict, f"slang_definitions_{dataset_name}")
+        # TODO: why should I update meanings upon the db only after building toml files already builded? (see natural)
+        # if dao.is_mongodb():
+        #     dao.dump_definitions(definitions_dict, f"standard_definitions_{dataset_name}")
+        #     dao.dump_definitions(slang_dict, f"slang_definitions_{dataset_name}")
         i = i + 1
 
 
@@ -108,12 +108,36 @@ def preparse_standard_toml_files():
     return listoffiles
 
 
+def preparse_standard_toml_files_sentiment(sentiment: str):
+    """
+    Returns a list of English standard word meanings.
+    @return: standard words definitions
+    """
+    toml_files = glob.glob(f"{get_project_root()}/Resources/definitions/standard_definitions_{sentiment}.toml")
+    listoffiles = []
+    for toml_file in toml_files:
+        listoffiles.append(read_toml(toml_file))
+    return listoffiles
+
+
 def preparse_slang_toml_files():
     """
     Returns a list of English slang word meanings.
     @return: slang words definitions
     """
     toml_files = glob.glob(f"{get_project_root()}/Resources/definitions/slang*.toml")
+    listoffiles = []
+    for toml_file in toml_files:
+        listoffiles.append(read_toml(toml_file))
+    return listoffiles
+
+
+def preparse_slang_toml_files_sentiment(sentiment:str):
+    """
+    Returns a list of English slang word meanings.
+    @return: slang words definitions
+    """
+    toml_files = glob.glob(f"{get_project_root()}/Resources/definitions/slang_definitions_{sentiment}.toml")
     listoffiles = []
     for toml_file in toml_files:
         listoffiles.append(read_toml(toml_file))
