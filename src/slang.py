@@ -30,7 +30,7 @@ def create_definitions(datasets: [], dao):
                 if definition == "":
                     definition = check_word_existence(word, slang_toml_files)
                     if definition == "":
-                        if count > 5 and len(word) > 3:
+                        if count > 1 and len(word) > 2:
                             definition = get_dictionary_definition(word)
                             print(f"Searching: {word}, used {count} times, definition: {definition[:35]}...")
                             if definition == "":
@@ -70,7 +70,9 @@ def get_slang_definition(word):
         text = response.json()
         if 'list' in text:
             for elem in text['list']:
-                if elem['thumbs_up'] > elem['thumbs_down'] and good_definition['count'] < elem['thumbs_up']:
+                if elem['thumbs_up'] > elem['thumbs_down'] \
+                        and good_definition['count'] < elem['thumbs_up'] \
+                        and elem['word'].lower() == word.lower():
                     good_definition = {"definition": elem['definition'], "count": elem['thumbs_up']}
     return good_definition["definition"]
 

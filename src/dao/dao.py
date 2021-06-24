@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 from timeit import default_timer as timer
+
 from src.dao.dao_mongo_db import DaoMongoDB
 from src.dao.dao_mysql_db import DaoMySQLDB
 from src.datasets_manager import (get_sentiment_emojis,

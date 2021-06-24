@@ -1,9 +1,7 @@
 #!/usr/bin/python3
-import pprint
 
 import pymongo
 from src.file_manager import read_file
-from bson.code import Code
 
 
 class DaoMongoDB:
@@ -162,8 +160,3 @@ class DaoMongoDB:
     def push_results(self, result_list):
         results = self.__get_collection_address("results")
         results.insert_many(result_list)
-
-
-if __name__ == '__main__':
-    dao = DaoMongoDB()
-    pprint.pprint(dao.get_counts("anticipation", "_words")['anticipation'])
