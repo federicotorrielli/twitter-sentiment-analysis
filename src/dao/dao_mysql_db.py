@@ -745,7 +745,16 @@ class DaoMySQLDB:
         Gets the usage percentage of lexical words in tweets
         @return: a dict of all the percentages for every sentiment
         """
-        # TODO:
+        freq = {}
+        with self.__connect_db() as connection:
+            with connection.cursor() as cursor:
+                sql = "SELECT `id`, `type`, SUM(`freq_perc`) AS tot " \
+                      "FROM `word_in_sentiment` RIGHT JOIN `sentiment` ON `id` = `sentiment_id` " \
+                      "GROUP BY `id`"
+                cursor = _execute_statement(cursor, sql, [])
+                for t in cursor.fetchall():
+                    freq[t["type"]] = t["tot"]
+        return freq
 
 
 if __name__ == '__main__':

@@ -40,7 +40,7 @@ def test_query(db_type="MongoDB"):
 
 if __name__ == '__main__':
     # dao = start_comparison("MongoDB")
-    # # dao2 = start_comparison("MySQL")
+    # dao2 = start_comparison("MySQL")
     #
     # test_query()
     # test_query("MySQL")
@@ -51,10 +51,11 @@ if __name__ == '__main__':
     #     wordcl.generate()
 
     # TODO: get data from DBs
-    graph_data = {
-        "anger": 3,
-        "joy": 5,
-        "fear": 1
-    }
+    # graph_data = {
+    #     "anger": 3,
+    #     "joy": 5,
+    #     "fear": 1
+    # }
+    graph_data = Dao(True).get_sentiments_popularity()
     build_histogram_matplotlib(graph_data, '% words [lex resources] in tweets')
 

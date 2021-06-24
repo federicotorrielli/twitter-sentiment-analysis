@@ -10,6 +10,7 @@ def build_histogram_matplotlib(data: dict, xlabel_name: str):
     group_data = list(data.values())
     group_names = list(data.keys())
     fig, ax = plt.subplots()
+    plt.gcf().subplots_adjust(left=0.15)
     ax.barh(group_names, group_data, label='Men')
     ax.set_xlabel(xlabel_name)
     fig.show()
