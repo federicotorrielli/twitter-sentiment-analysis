@@ -66,8 +66,8 @@ class DaoMongoDB:
             tweet_dict[f'{sentiment}_{key}'] = line
         tweet_document.insert(tweet_dict)
 
-    def build_sentiments(self, word_datasets, emoji_datasets, emoticon_datasets):
-        sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
+    def build_sentiments(self, sentiments, word_datasets, emoji_datasets, emoticon_datasets):
+        # sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
         to_add_words, to_add_emojis, to_add_emoticons = {}, {}, {}
         for index, sentiment in enumerate(sentiments):
             to_add_words[sentiment] = word_datasets[index]

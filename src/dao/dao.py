@@ -17,6 +17,7 @@ class Dao:
             self.dao_type = DaoMySQLDB()
         else:
             self.dao_type = DaoMongoDB()
+        self.type_db = type_db
         self.sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
 
     def build_db(self):
@@ -102,9 +103,8 @@ class Dao:
         @param definition: the definition string (see get_definition(...))
         @param popularity: the popularity dict (see get_popularity(...))
         """
-        # TODO: do it in dao_mysql_db (see issue #10)
-        #  there's already the word definition in the db (?), line 50
-        self.dao_type.push_result(word.lower(), count, definition, popularity)
+        if not self.type_db:
+            self.dao_type.push_result(word.lower(), count, definition, popularity)
 
     def push_results(self, result_list: []):
         """
@@ -113,8 +113,8 @@ class Dao:
         it to the database
         @param result_list: [...{}...]
         """
-        # TODO: do it in dao_mysql_db (see issue #10)
-        self.dao_type.push_results(result_list)
+        if not self.type_db:
+            self.dao_type.push_results(result_list)
 
     def get_result(self, word: str) -> dict:
         """
@@ -124,23 +124,22 @@ class Dao:
         """
         return self.dao_type.get_result(word.lower())
 
-    def get_tokens(self, token_type: str):
-        """
-        Gets all tokens of type
-        @param token_type: possibile values "word", "emoji" or "emoticon"
-        @return: dict {"token": id}
-        """
-        # TODO: do it in dao_mongo_db (?)
-        return self.dao_type.get_tokens(token_type)
-
     def create_index(self, index: str, table: str):
         """
         Creates an index on the attribute "index" on the table "table"
         @param index: The index / attribute to create
         @param table: The table / document to put the index on
         """
-        # TODO: do it in dao_mysql_db
+        # TODO: do it in dao_mysql_db, think it's not neccessary in MySQL
         self.dao_type.create_index(index, table)
+
+    def add_tweets_tokens(self, tweets_tokens: dict):
+        """
+        Inserts the connection between tweets and tokens. Used only in relational db
+        @param tweets_tokens: {tweet_id: [tokens]...}
+        """
+        if self.type_db:
+            self.dao_type.add_tweets_tokens(tweets_tokens)
 
 
 if __name__ == '__main__':
