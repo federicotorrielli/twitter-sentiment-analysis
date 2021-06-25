@@ -853,6 +853,10 @@ class DaoMySQLDB:
         return freq
 
     def add_all_sentiment_perc(self, sentiment_percentages: dict):
+        """
+        Insert all sentiment percentages
+        @param sentiment_percentages: {'sentiment': (perc_presence_lex_res, perc_presence_twitter)}
+        """
         with self.__connect_db() as connection:
             with connection.cursor() as cursor:
                 sql = "UPDATE `sentiment` " \
@@ -865,7 +869,21 @@ class DaoMySQLDB:
                 _executemany_statements(cursor, sql, sql_params)
                 connection.commit()
 
-    # def get_sentiments_
+    def get_sentiment_percentages(self):
+        """
+        Gets sentiments' percentages
+        @return: {"sentiment": (perc_presence_lex_res, perc_presence_twitter)}
+        """
+        sentiment_percentages = {}
+        with self.__connect_db() as connection:
+            with connection.cursor() as cursor:
+                sql = "SELECT `type`, `perc_presence_lex_res`, `perc_presence_twitter` FROM `sentiment`"
+
+                res = _execute_statement(cursor, sql).fetchall()
+                for t in res:
+                    sentiment_percentages[t["type"]] = (t["perc_presence_lex_res"], t["perc_presence_twitter"])
+        return  sentiment_percentages
+
 
 if __name__ == '__main__':
     """ 
