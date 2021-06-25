@@ -42,7 +42,7 @@ if __name__ == '__main__':
     # dao2 = start_comparison("MySQL")
 
     test_query()
-    test_query("MySQL")
+    # test_query("MySQL")
 
     # TODO: Wordclouds from MySQL too
     if input("Do you want to generate the Wordclouds? This could take 10 minutes or more! [y/N] ").lower() == "y":

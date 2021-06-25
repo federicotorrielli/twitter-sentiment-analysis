@@ -242,6 +242,7 @@ def create_new_lexicon(word_datasets):
     @param word_datasets: the list of dict of words processed by tweets
     @return: the new wordlist (see the definition)
     """
+    print("Creating the new lexicon...")
     new_wordlist = []
     existent_words = get_sentiment_words()
 

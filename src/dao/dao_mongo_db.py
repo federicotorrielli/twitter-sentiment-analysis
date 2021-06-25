@@ -84,6 +84,14 @@ class DaoMongoDB:
     def create_index(self, index: str, table: str):
         t = self.__get_collection_address(table)
         t.create_index([(index, pymongo.ASCENDING)])
+        
+    def dump_new_lexicon(self, wordlist: []):
+        print("Dumping the new lexicon on MongoDB...")
+        document = self.__get_collection_address("new_lexicon")
+        to_insert = {}
+        for index, word in enumerate(wordlist):
+            to_insert["new_" + str(index)] = word
+        document.insert_one(to_insert)
 
     def get_count(self, word) -> dict:
         sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
