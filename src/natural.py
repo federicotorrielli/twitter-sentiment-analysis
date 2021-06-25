@@ -170,13 +170,14 @@ def calc_perc_sharedwords(shared_words, word_datasets):
     linelist = get_lexical_Nlines()
     returndict = {}
     index = 0
+    sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
     for wordlist in shared_words.values():
         n_shared_words = len(wordlist)
         n_twitter_words = len(word_datasets[index])
         print(f"Dataset: {index}, #Shared: {n_shared_words}, #Twitter: {n_twitter_words}, #Lex: {linelist[index]}")
         perc_presence_lex_res = n_shared_words / linelist[index]
         perc_presence_twitter = n_shared_words / n_twitter_words
-        returndict[f"{index}"] = (perc_presence_lex_res, perc_presence_twitter)
+        returndict[sentiments[index]] = (perc_presence_lex_res, perc_presence_twitter)
         index += 1
     return returndict
 
@@ -204,14 +205,26 @@ def create_word_final_result(dao):
     for value in input_set:
         print(f"Creating result for word: {value}")
         count = dao.get_count(value)
+        definition = dao.get_definition(value)
+        if '[' in definition:
+            type_d = "slang"
+        else:
+            type_d = "standard"
+        if definition == "NOTHING FOUND":
+            typo = "yes"
+        else:
+            typo = "no"
         result_list.append(
             {
                 "word": value,
                 "count": count,
-                "definition": dao.get_definition(value),
+                "definition": definition,
+                "def_type": type_d,
+                "typo": typo,
                 "popularity": dao.get_popularity(value)
             }
         )
+    # TODO: implement def_type and typo in MySQL
     dao.push_results(result_list)
     dao.create_index('word', 'results')  # Index on the attribute "word" in the table results
     end = timer()
@@ -301,4 +314,4 @@ def quickstart(dao: Dao):
 
     shared_words = check_shared_words(word_datasets)
     perc_calc = calc_perc_sharedwords(shared_words, word_datasets)
-    pprint(perc_calc)
+    dao.add_all_sentiment_perc(perc_calc)
