@@ -173,6 +173,13 @@ class Dao:
         """
         self.dao_type.dump_new_lexicon(wordlist)
 
+    def add_all_sentiment_perc(self, sentiment_percentages: dict):
+        """
+        TODO: comment
+        """
+        # TODO: MongoDB
+        self.dao_type.add_all_sentiment_perc(sentiment_percentages)
+
 
 if __name__ == '__main__':
     """ 
