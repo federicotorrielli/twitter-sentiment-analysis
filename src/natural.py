@@ -16,6 +16,7 @@ from src.datasets_manager import get_sentiment_words
 from src.slang import create_definitions, preparse_standard_toml_files_sentiment, preparse_slang_toml_files_sentiment
 
 tokenizer = TweetTokenizer()
+tweets_tokens = {}  # dict that contains every token per tweet
 
 
 def clean_emoticons(phrase: str):
@@ -116,14 +117,13 @@ def process_dataset(dao, tweets: dict, sentiment: str):
     start = timer()
     wordlist = []
     stopset = create_stopword_list()
-    tweets_tokens = {}
     if '_id' in tweets:
         tweets.pop('_id')
     for tweet_id, phrase in tweets.items():
         processed_phrase = process_phrase(phrase, stopset)
         wordlist.append(processed_phrase)
         tweets_tokens[tweet_id] = processed_phrase  # used in relational db
-    dao.add_tweets_tokens(tweets_tokens)  # used in relational db
+
     count_tuples = count_words(wordlist)
     most_used_hashtags = count_hashtags(count_tuples)
     emojis, emoticons = count_emojis(count_tuples)
@@ -299,8 +299,9 @@ def quickstart(dao: Dao):
     hashtag_datasets = [anger_hashtags, anticipation_hashtags, disgust_hashtags, fear_hashtags, joy_hashtags,
                         sadness_hashtags, surprise_hashtags, trust_hashtags]
 
-    dao.build_sentiments(word_datasets, emoji_datasets, emoticons_datasets, hashtag_datasets)
     dao.dump_new_lexicon(create_new_lexicon(word_datasets))
+    dao.add_tweets_tokens(tweets_tokens)  # used in relational db
+    dao.build_sentiments(word_datasets, emoji_datasets, emoticons_datasets, hashtag_datasets)
 
     if input("Do you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
         create_definitions(word_datasets, dao)  # toml files

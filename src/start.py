@@ -40,7 +40,7 @@ def test_query(db_type="MongoDB"):
 
 if __name__ == '__main__':
     # dao = start_comparison("MongoDB")
-    # dao2 = start_comparison("MySQL")
+    dao2 = start_comparison("MySQL")
     #
     # test_query()
     # test_query("MySQL")
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     #     "anger": 86,
     #     "fear": 50
     # }
-    sentiment_percentages = Dao(False).get_sentiment_percentages()
-    graph_data = {sentiment: sentiment_percentages[sentiment][0] for sentiment in sentiment_percentages}
-    build_histogram_matplotlib(graph_data, '% words [lex resources] in tweets')
+    # sentiment_percentages = Dao(False).get_sentiment_percentages()
+    # graph_data = {sentiment: sentiment_percentages[sentiment][0] for sentiment in sentiment_percentages}
+    # build_histogram_matplotlib(graph_data, '% words [lex resources] in tweets')
 
