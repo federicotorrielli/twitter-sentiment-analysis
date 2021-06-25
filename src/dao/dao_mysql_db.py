@@ -644,7 +644,8 @@ class DaoMySQLDB:
                     data[t[f"{token_type}"]] = t[f"{param}"]
         return data
 
-    def build_sentiments(self, sentiments, word_datasets, emoji_datasets, emoticon_datasets):
+    def build_sentiments(self, sentiments, word_datasets, emoji_datasets, emoticon_datasets, hashtag_datasets):
+        # TODO: build hashtag_datasets
         """
         Puts in the db the different datasets built in natural
         @param sentiments: array of sentiments
@@ -677,7 +678,7 @@ class DaoMySQLDB:
                                             id_sentiment,
                                             list_word[word],
                                             self.__calculate_popularity(word_datasets[index][word],
-                                                                       sentiments_count[sentiment]))]
+                                                                        sentiments_count[sentiment]))]
                     if sql_params is not []:
                         _executemany_statements(cursor, sql_intert, sql_params)
                         connection.commit()

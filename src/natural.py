@@ -12,8 +12,7 @@ from dao.dao import Dao
 from file_manager import read_file
 from lexical_glob import get_lexical_filenames, get_lexical_Nlines
 from set_classification import negemoticons, posemoticons, twitter_stopwords
-from src.slang import create_definitions, preparse_standard_toml_files, preparse_slang_toml_files, \
-    preparse_standard_toml_files_sentiment, preparse_slang_toml_files_sentiment
+from src.slang import create_definitions, preparse_standard_toml_files_sentiment, preparse_slang_toml_files_sentiment
 
 tokenizer = TweetTokenizer()
 
@@ -263,7 +262,7 @@ def quickstart(dao: Dao):
     hashtag_datasets = [anger_hashtags, anticipation_hashtags, disgust_hashtags, fear_hashtags, joy_hashtags,
                         sadness_hashtags, surprise_hashtags, trust_hashtags]
 
-    dao.build_sentiments(word_datasets, emoji_datasets, emoticons_datasets)  # TODO: add hashtags to build_sentiments
+    dao.build_sentiments(word_datasets, emoji_datasets, emoticons_datasets, hashtag_datasets)
 
     if input("Do you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
         create_definitions(word_datasets, dao)  # toml files
