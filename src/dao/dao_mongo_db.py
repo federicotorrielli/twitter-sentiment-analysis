@@ -85,6 +85,14 @@ class DaoMongoDB:
         t = self.__get_collection_address(table)
         t.create_index([(index, pymongo.ASCENDING)])
 
+    def dump_new_lexicon(self, wordlist: []):
+        print("Dumping the new lexicon on MongoDB...")
+        document = self.__get_collection_address("new_lexicon")
+        to_insert = {}
+        for index, word in enumerate(wordlist):
+            to_insert["new_" + str(index)] = word
+        document.insert_one(to_insert)
+
     def get_count(self, word) -> dict:
         sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
         final_list = {}
@@ -149,12 +157,22 @@ class DaoMongoDB:
         definition_document.insert(definitions)
 
     def push_result(self, word: str, count: dict, definition: str, popularity: dict):
+        if '[' in definition:
+            type_d = "slang"
+        else:
+            type_d = "standard"
+        if definition == "NOTHING FOUND":
+            typo = "yes"
+        else:
+            typo = "no"
         if word != "_id" and "." not in word and "$" not in word:
             results = self.__get_collection_address("results")
             results.insert_one({
                 "word": word,
                 "count": count,
                 "definition": definition,
+                "def_type": type_d,
+                "typo": typo,
                 "popularity": popularity
             })
 
