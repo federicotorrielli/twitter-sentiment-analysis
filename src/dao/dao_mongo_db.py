@@ -84,6 +84,10 @@ class DaoMongoDB:
     def create_index(self, index: str, table: str):
         t = self.__get_collection_address(table)
         t.create_index([(index, pymongo.ASCENDING)])
+        
+    def add_all_sentiment_perc(self, sentiment_percentages):
+        t = self.__get_collection_address("sentiment_percentages")
+        t.insert_one(sentiment_percentages)
 
     def dump_new_lexicon(self, wordlist: []):
         print("Dumping the new lexicon on MongoDB...")
@@ -151,6 +155,9 @@ class DaoMongoDB:
             if sentiment in count:
                 final_list[sentiment] = round(count[sentiment] / self.__get_word_numbers(sentiment), 4)
         return final_list
+    
+    def get_sentiment_percentages(self) -> {}:
+        return self.__get_collection_address("sentiment_percentages").find_one()
 
     def dump_definitions(self, definitions: dict, name: str):
         definition_document = self.database[f'{name}']
@@ -194,9 +201,3 @@ class DaoMongoDB:
             for s in res["popularity"]:
                 sentiments_popularity[s] += res["popularity"][s]
         return sentiments_popularity
-
-
-if __name__ == '__main__':
-    dao = DaoMongoDB()
-    # pprint.pprint(dao.get_counts("anticipation", "_words")['anticipation'])
-    dao.get_sentiments_popularity()
