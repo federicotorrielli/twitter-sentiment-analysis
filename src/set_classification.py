@@ -113,4 +113,4 @@ OthersEmoji = [u'\U0001F004', u'\U0001F0CF', u'\U0001F300', u'\U0001F301', u'\U0
                u'\U0001F640', u'\U0001F645', u'\U0001F646', u'\U0001F647', u'\U0001F648', u'\U0001F649', u'\U0001F64A',
                u'\U0001F64B', u'\U0001F64C', u'\U0001F64E', u'\U0001F64F', u'\U0001F64F']
 
-twitter_stopwords = ['USERNAME', 'URL']
+twitter_stopwords = ['USERNAME', 'URL', '!', ',']

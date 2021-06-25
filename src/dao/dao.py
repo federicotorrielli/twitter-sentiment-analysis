@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 from timeit import default_timer as timer
+
 from src.dao.dao_mongo_db import DaoMongoDB
 from src.dao.dao_mysql_db import DaoMySQLDB
 from src.datasets_manager import (get_sentiment_emojis,
@@ -51,14 +52,16 @@ class Dao:
         """
         return self.dao_type.get_counts(collection_name, token_type)
 
-    def build_sentiments(self, word_datasets, emoji_datasets, emoticon_datasets):
+    def build_sentiments(self, word_datasets, emoji_datasets, emoticon_datasets, hashtag_datasets):
         """
         Puts in the db the different datasets built in natural
+        @param hashtag_datasets: a list of dicts for every hashtag_count sentiment
         @param word_datasets: a list of dicts for every word_count sentiment
         @param emoji_datasets: a list of dicts for every emoji_count sentiment
         @param emoticon_datasets: a list of dicts for every emoticon_count sentiment
         """
-        self.dao_type.build_sentiments(self.sentiments, word_datasets, emoji_datasets, emoticon_datasets)
+        self.dao_type.build_sentiments(self.sentiments, word_datasets, emoji_datasets, emoticon_datasets,
+                                       hashtag_datasets)
 
     def dump_definitions(self, definitions: dict = {}, name: str = ""):
         """
@@ -160,6 +163,15 @@ class Dao:
         """
         if self.type_db:
             self.dao_type.add_tweets_tokens(tweets_tokens)
+            
+    def dump_new_lexicon(self, wordlist: []):
+        """
+        Dumps on the DBs the new words from twitter that are not present in the
+        pre-existent wordlist given by the project
+        @param wordlist:
+        @return:
+        """
+        self.dao_type.dump_new_lexicon(wordlist)
 
 
 if __name__ == '__main__':

@@ -12,8 +12,8 @@ from dao.dao import Dao
 from file_manager import read_file
 from lexical_glob import get_lexical_filenames, get_lexical_Nlines
 from set_classification import negemoticons, posemoticons, twitter_stopwords
-from src.slang import create_definitions, preparse_standard_toml_files, preparse_slang_toml_files, \
-    preparse_standard_toml_files_sentiment, preparse_slang_toml_files_sentiment
+from src.datasets_manager import get_sentiment_words
+from src.slang import create_definitions, preparse_standard_toml_files_sentiment, preparse_slang_toml_files_sentiment
 
 tokenizer = TweetTokenizer()
 
@@ -33,13 +33,16 @@ def clean_emoticons(phrase: str):
 def process_phrase(phrase: str, stopword_list: set):
     """
     Given a phrase and the stopwords list, it tokenizes the phrase removing the stopwords.
+    Plus, we remove useless words (with "_" and "USERNAME" in it)
     @param phrase: sentence to be tokenized
-    @param  stopword_list:
+    @param  stopword_list: the stopword list
     @return: the tokenized phrase
     """
     clean_phrase, emote_list = clean_emoticons(phrase)
     tokenized = tokenizer.tokenize(clean_phrase)
-    final_phrase = [word for word in tokenized if word not in stopword_list and "_" not in word] + emote_list
+    final_phrase = [word for word in tokenized if word not in stopword_list
+                    and "_" not in word
+                    and "USERNAME" not in word] + emote_list
     return final_phrase
 
 
@@ -216,6 +219,11 @@ def create_word_final_result(dao):
 
 
 def dump_definitions_mongodb():
+    """
+    Dumps all the definitions on MongoDB. This function was made because we treat
+    definitions in mongodb as a unique document, instead of an attribute of a
+    pre-existent word in MySQL
+    """
     dao = Dao(False)
     if dao.is_mongodb():
         sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
@@ -225,6 +233,23 @@ def dump_definitions_mongodb():
 
             dao.dump_definitions(standard_toml_files, f"standard_definitions_{sentiment}")
             dao.dump_definitions(slang_toml_files, f"slang_definitions_{sentiment}")
+
+
+def create_new_lexicon(word_datasets):
+    """
+    Creates a new wordlist of words that are not present
+    in the pre-existent wordlist given by the project
+    @param word_datasets: the list of dict of words processed by tweets
+    @return: the new wordlist (see the definition)
+    """
+    new_wordlist = []
+    existent_words = get_sentiment_words()
+
+    for dataset in word_datasets:
+        for word in dataset.keys():
+            if word not in existent_words:
+                new_wordlist.append(word)
+    return new_wordlist
 
 
 def quickstart(dao: Dao):
@@ -257,21 +282,23 @@ def quickstart(dao: Dao):
                      surprise_words, trust_words]
     emoticons_datasets = [anger_emoticons, anticipation_emoticons, disgust_emoticons, fear_emoticons, joy_emoticons,
                           sadness_emoticons, surprise_emoticons, trust_emoticons]
-    # TODO: utilizzare hashtag
-    dao.build_sentiments(word_datasets, emoji_datasets, emoticons_datasets)
+    hashtag_datasets = [anger_hashtags, anticipation_hashtags, disgust_hashtags, fear_hashtags, joy_hashtags,
+                        sadness_hashtags, surprise_hashtags, trust_hashtags]
+
+    dao.build_sentiments(word_datasets, emoji_datasets, emoticons_datasets, hashtag_datasets)
+    dao.dump_new_lexicon(create_new_lexicon(word_datasets))
 
     if input("Do you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
         create_definitions(word_datasets, dao)  # toml files
-    if dao.is_mongodb():
-        dump_definitions_mongodb()
-    else:
-        dao.dump_definitions()
-
-    if dao.is_mongodb():
-        if input("Do you want to create results for the words? [y/N] ").lower() == "y":
-            create_word_final_result(dao)
+        if dao.is_mongodb():
+            dump_definitions_mongodb()
+        else:
+            dao.dump_definitions()
+        if dao.is_mongodb():
+            if input("Do you want to create results for the words? [y/N] ").lower() == "y":
+                create_word_final_result(dao)
 
     # TODO: use the data below to build histogram
     shared_words = check_shared_words(word_datasets)
     perc_calc = calc_perc_sharedwords(shared_words, word_datasets)
-    pprint(perc_calc)  # TODO: maybe we can store these percentages?
+    pprint(perc_calc)

@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-import pprint
 
 import pymongo
 from src.file_manager import read_file
@@ -66,19 +65,21 @@ class DaoMongoDB:
             tweet_dict[f'{sentiment}_{key}'] = line
         tweet_document.insert(tweet_dict)
 
-    def build_sentiments(self, sentiments, word_datasets, emoji_datasets, emoticon_datasets):
-        # sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
-        to_add_words, to_add_emojis, to_add_emoticons = {}, {}, {}
+    def build_sentiments(self, sentiments, word_datasets, emoji_datasets, emoticon_datasets, hashtag_datasets):
+        to_add_words, to_add_emojis, to_add_emoticons, to_add_hashtags = {}, {}, {}, {}
         for index, sentiment in enumerate(sentiments):
             to_add_words[sentiment] = word_datasets[index]
             to_add_emojis[sentiment] = emoji_datasets[index]
             to_add_emoticons[sentiment] = emoticon_datasets[index]
+            to_add_hashtags[sentiment] = hashtag_datasets[index]
         sentiments_word_table = self.database['count_words']
         sentiments_word_table.insert_one(to_add_words)
         sentiments_emoji_table = self.database['count_emoji']
         sentiments_emoji_table.insert_one(to_add_emojis)
         sentiments_emoticon_table = self.database['count_emoticon']
         sentiments_emoticon_table.insert_one(to_add_emoticons)
+        sentiment_hashtag_table = self.database['count_hashtags']
+        sentiment_hashtag_table.insert_one(to_add_hashtags)
 
     def create_index(self, index: str, table: str):
         t = self.__get_collection_address(table)
@@ -116,7 +117,7 @@ class DaoMongoDB:
             sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
         else:
             sentiments = [sentiment]
-        # If we don't define a sentiment, we cycle through them all
+
         for s in sentiments:
             if len(self.std_definitions[s]) == 0 or len(self.slang_definitions[s]) == 0:
                 self.std_definitions[s] = self.get_document(f'standard_definitions_{s}')
