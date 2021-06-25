@@ -271,6 +271,7 @@ def quickstart(dao: Dao):
         if input("Do you want to create results for the words? [y/N] ").lower() == "y":
             create_word_final_result(dao)
 
+    # TODO: use the data below to build histogram
     shared_words = check_shared_words(word_datasets)
     perc_calc = calc_perc_sharedwords(shared_words, word_datasets)
     pprint(perc_calc)  # TODO: maybe we can store these percentages?

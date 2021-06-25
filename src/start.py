@@ -2,9 +2,9 @@ from pprint import pprint
 from timeit import default_timer as timer
 
 from dao.dao import Dao
-from natural import quickstart
+from natural import quickstart, create_word_final_result
 from src.graphs import build_histogram_matplotlib
-from wordcloudgenerator import WordCloudCreator
+from src.wordcloudgenerator import WordCloudCreator
 
 
 def start_comparison(db_type="MongoDB"):
@@ -50,12 +50,17 @@ if __name__ == '__main__':
     #     wordcl = WordCloudCreator(dao)
     #     wordcl.generate()
 
-    # TODO: get data from DBs
-    # graph_data = {
-    #     "anger": 3,
-    #     "joy": 5,
-    #     "fear": 1
-    # }
-    graph_data = Dao(True).get_sentiments_popularity()
+    # TODO: find why the graph are different
+    # TODO: get data from perc_sharewords, ...
+    # graph_data = Dao(True).get_sentiments_popularity()
+    # build_histogram_matplotlib(graph_data, '% words [lex resources] in tweets')
+    # graph_data = Dao(False).get_sentiments_popularity()
+    # build_histogram_matplotlib(graph_data, '% words [lex resources] in tweets')
+
+    graph_data = {
+        "joy": 24.5,
+        "anger": 86,
+        "fear": 50
+    }
     build_histogram_matplotlib(graph_data, '% words [lex resources] in tweets')
 

@@ -166,9 +166,18 @@ class DaoMongoDB:
         Gets the usage percentage of lexical words in tweets
         @return: a dict of all the percentages for every sentiment
         """
-        # TODO:
+        results = self.__get_collection_address("results").find({})
+        sentiments_popularity = {}
+        sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
+        for sentiment in sentiments:
+            sentiments_popularity[sentiment] = 0
+        for res in results:
+            for s in res["popularity"]:
+                sentiments_popularity[s] += res["popularity"][s]
+        return sentiments_popularity
 
 
 if __name__ == '__main__':
     dao = DaoMongoDB()
-    pprint.pprint(dao.get_counts("anticipation", "_words")['anticipation'])
+    # pprint.pprint(dao.get_counts("anticipation", "_words")['anticipation'])
+    dao.get_sentiments_popularity()

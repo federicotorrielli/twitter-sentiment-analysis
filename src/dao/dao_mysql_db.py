@@ -94,31 +94,25 @@ class DaoMySQLDB:
         """
         with self.__connect_db() as connection:
             with connection.cursor() as cursor:
-                _execute_statement(cursor, "DROP TABLE IF EXISTS `labelled`")
-                _execute_statement(cursor, "DROP TABLE IF EXISTS `belongs_to`")
-                _execute_statement(cursor, "DROP TABLE IF EXISTS `word_in_tweet`")
-                _execute_statement(cursor, "DROP TABLE IF EXISTS `emoticon_in_tweet`")
-                _execute_statement(cursor, "DROP TABLE IF EXISTS `emoji_in_tweet`")
-                _execute_statement(cursor, "DROP TABLE IF EXISTS `word_in_sentiment`")
-                _execute_statement(cursor, "DROP TABLE IF EXISTS `emoticon_in_sentiment`")
-                _execute_statement(cursor, "DROP TABLE IF EXISTS `emoji_in_sentiment`")
+                tables = ["labelled", "belongs_to", "word_in_tweet", "emoticon_in_tweet", "emoji_in_tweet",
+                          "word_in_sentiment", "emoticon_in_sentiment", "emoji_in_sentiment", "new_lexicon_in_sentiment",
+                          "sentiment", "twitter_message", "word", "new_lexicon", "emoticon", "emoji"]
+                for table in tables:
+                    _execute_statement(cursor, f"DROP TABLE IF EXISTS `{table}`")
                 connection.commit()
 
-                _execute_statement(cursor, "DROP TABLE IF EXISTS `sentiment`")
                 _execute_statement(cursor, "CREATE TABLE `sentiment` ("
                                            "`id` int NOT NULL AUTO_INCREMENT,"
                                            "`type` varchar(32) NOT NULL UNIQUE,"
                                            "PRIMARY KEY (`id`))")
                 connection.commit()
 
-                _execute_statement(cursor, "DROP TABLE IF EXISTS `twitter_message`")
                 _execute_statement(cursor, "CREATE TABLE `twitter_message` ("
                                            "`id` int NOT NULL AUTO_INCREMENT,"
                                            "`tweet_content` varchar(280) NOT NULL,"
                                            "PRIMARY KEY (`id`))")
                 connection.commit()
 
-                _execute_statement(cursor, "DROP TABLE IF EXISTS `word`")
                 _execute_statement(cursor, "CREATE TABLE `word` ("
                                            "`id` int NOT NULL AUTO_INCREMENT,"
                                            "`word` varchar(140) NOT NULL UNIQUE,"
@@ -128,7 +122,15 @@ class DaoMySQLDB:
                                            "PRIMARY KEY (`id`))")
                 connection.commit()
 
-                _execute_statement(cursor, "DROP TABLE IF EXISTS `emoticon`")
+                _execute_statement(cursor, "CREATE TABLE `new_lexicon` ("
+                                           "`id` int NOT NULL AUTO_INCREMENT,"
+                                           "`token` varchar(140) NOT NULL UNIQUE,"
+                                           "`slang` BOOLEAN NOT NULL DEFAULT FALSE,"
+                                           "`meaning` varchar(1024) "
+                                           "CHARACTER SET utf32 COLLATE utf32_general_ci NOT NULL DEFAULT '',"
+                                           "PRIMARY KEY (`id`))")
+                connection.commit()
+
                 _execute_statement(cursor, "CREATE TABLE `emoticon` ("
                                            "`id` int NOT NULL AUTO_INCREMENT,"
                                            "`emoticon` varchar(140) "
@@ -137,7 +139,6 @@ class DaoMySQLDB:
                                            "PRIMARY KEY (`id`))")
                 connection.commit()
 
-                _execute_statement(cursor, "DROP TABLE IF EXISTS `emoji`")
                 _execute_statement(cursor, "CREATE TABLE `emoji` ("
                                            "`id` int NOT NULL AUTO_INCREMENT,"
                                            "`emoji` varchar(140) "
@@ -206,6 +207,17 @@ class DaoMySQLDB:
                                            "`count` int NOT NULL DEFAULT -1,"
                                            "PRIMARY KEY(`tweet_id`,`token_id`),"
                                            "FOREIGN KEY (`token_id`) REFERENCES `word` (`id`) "
+                                           "ON DELETE CASCADE ON UPDATE CASCADE,"
+                                           "FOREIGN KEY (`tweet_id`) REFERENCES `twitter_message` (`id`) "
+                                           "ON DELETE CASCADE ON UPDATE CASCADE)")
+                connection.commit()
+
+                _execute_statement(cursor, "CREATE TABLE `new_lexicon_in_tweet` ("
+                                           "`tweet_id` int NOT NULL, "
+                                           "`token_id` int NOT NULL,"
+                                           "`count` int NOT NULL DEFAULT -1,"
+                                           "PRIMARY KEY(`tweet_id`,`token_id`),"
+                                           "FOREIGN KEY (`token_id`) REFERENCES `new_lexicon` (`id`) "
                                            "ON DELETE CASCADE ON UPDATE CASCADE,"
                                            "FOREIGN KEY (`tweet_id`) REFERENCES `twitter_message` (`id`) "
                                            "ON DELETE CASCADE ON UPDATE CASCADE)")
@@ -353,27 +365,30 @@ class DaoMySQLDB:
                 cursor.execute("SET character_set_connection=utf8mb4")
 
                 words = {}
-                res = _execute_statement(cursor, f"SELECT `id`, `word` FROM `word`").fetchall()
-                for t in res:
-                    words[t["word"]] = t["id"]
+                tables = ["word", "new_lexicon"]
+                for table in tables:
+                    field = "word" if table == "word" else "token"
+                    res = _execute_statement(cursor, f"SELECT `id`, `{field}` FROM `{table}`").fetchall()
+                    for t in res:
+                        words[t[{field}]] = t["id"]
 
-                sql_update_words = "UPDATE `word` SET `meaning` = %s, `slang` = %s WHERE `id` = %s"
-                sql_params = []
+                    sql_update_words = "UPDATE `{table}` SET `meaning` = %s, `slang` = %s WHERE `id` = %s"
+                    sql_params = []
 
-                for word in words:
-                    # find word definition
-                    is_slang = 0
-                    definition = check_word_existence(word, standard_toml_files)
-                    if definition == "":
-                        definition = check_word_existence(word, slang_toml_files)
-                        is_slang = definition != ""
-                        definition = "NOTHING FOUND" if definition == "" else definition
+                    for word in words:
+                        # find word definition
+                        is_slang = 0
+                        definition = check_word_existence(word, standard_toml_files)
+                        if definition == "":
+                            definition = check_word_existence(word, slang_toml_files)
+                            is_slang = definition != ""
+                            definition = "NOTHING FOUND" if definition == "" else definition
 
-                    definition = (definition[:1021] + '...') if len(definition) > 1024 else definition
-                    sql_params += [(definition, is_slang, words[word])]
+                        definition = (definition[:1021] + '...') if len(definition) > 1024 else definition
+                        sql_params += [(definition, is_slang, words[word])]
 
-                _executemany_statements(cursor, sql_update_words, sql_params)
-                connection.commit()
+                    _executemany_statements(cursor, sql_update_words, sql_params)
+                    connection.commit()
 
     def __insert_tweets_sentiments(self, sentiments_tweets):
         """
@@ -517,7 +532,8 @@ class DaoMySQLDB:
         tokens = {}
         with self.__connect_db() as connection:
             with connection.cursor() as cursor:
-                sql = f"SELECT `id`, `{token_type}` " \
+                field = "token" if token_type == "new_lexicon" else token_type
+                sql = f"SELECT `id`, `{field}` " \
                       f"FROM `{token_type}` "
                 cursor = _execute_statement(cursor, sql)
                 for t in cursor.fetchall():
@@ -529,14 +545,15 @@ class DaoMySQLDB:
         Inserts the connection between tweets and tokens
         @param tweets_tokens: {tweet_id: [tokens]...}
         """
-        # TODO: remove symbols and what is not a token we need (like "i'm")
         # TODO: manage new tokens
         list_word = self.get_tokens("word")
+        list_new_lexicon = self.get_tokens("new_lexicon")
         list_emoji = self.get_tokens("emoji")
         list_emoticon = self.get_tokens("emoticon")
 
         # data_token = {tweet_id: {token_id: count,...},...}
         data_word = {}
+        data_new = {}
         data_emoji = {}
         data_emoticon = {}
 
@@ -567,8 +584,24 @@ class DaoMySQLDB:
                     else:
                         data_emoticon[tweet_id][list_emoticon[token]] += 1
 
+                else:
+                    # TODO: wait the natural func
+                    if token not in list_new_lexicon:
+                        with self.__connect_db() as connection:
+                            with connection.cursor() as cursor:
+                                sql = "INSERT INTO `new_lexicon`(`token`) VALUES (%s)"
+                                _execute_statement(cursor, sql, [token])
+                                list_new_lexicon[token] = cursor.lastrowid
+                    if tweet_id not in data_new or list_new_lexicon[token] not in data_new[tweet_id]:
+                        if tweet_id not in data_new:
+                            data_new[tweet_id] = {}
+                        data_new[tweet_id][list_new_lexicon[token]] = 1
+                    else:
+                        data_new[tweet_id][list_new_lexicon[token]] += 1
+
         data_to_insert = {
             "word": data_word,
+            "new_lexicon": data_new,
             "emoji": data_emoji,
             "emoticon": data_emoticon
         }
