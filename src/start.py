@@ -40,7 +40,7 @@ def test_query(db_type="MongoDB"):
 
 if __name__ == '__main__':
     # dao = start_comparison("MongoDB")
-    dao2 = start_comparison("MySQL")
+    # dao2 = start_comparison("MySQL")
     #
     # test_query()
     # test_query("MySQL")
@@ -50,19 +50,12 @@ if __name__ == '__main__':
     #     wordcl = WordCloudCreator(dao)
     #     wordcl.generate()
 
-    # TODO: find why the graph are different
-    # TODO: get data from perc_sharewords, ...
-    # graph_data = Dao(True).get_sentiments_popularity()
-    # build_histogram_matplotlib(graph_data, '% words [lex resources] in tweets')
-    # graph_data = Dao(False).get_sentiments_popularity()
-    # build_histogram_matplotlib(graph_data, '% words [lex resources] in tweets')
-
     # graph_data = {
     #     "joy": 24.5,
     #     "anger": 86,
     #     "fear": 50
     # }
-    sentiment_percentages = Dao(True).get_sentiment_percentages()
+    sentiment_percentages = Dao(False).get_sentiment_percentages()
     graph_data = {sentiment: sentiment_percentages[sentiment][0] for sentiment in sentiment_percentages}
     build_histogram_matplotlib(graph_data, '% words [lex resources] in tweets')
 

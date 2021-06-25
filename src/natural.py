@@ -224,7 +224,7 @@ def create_word_final_result(dao):
                 "popularity": dao.get_popularity(value)
             }
         )
-    # TODO: implement def_type and typo in MySQL
+    # TODO: implement typo in MySQL
     dao.push_results(result_list)
     dao.create_index('word', 'results')  # Index on the attribute "word" in the table results
     end = timer()
@@ -312,7 +312,6 @@ def quickstart(dao: Dao):
             if input("Do you want to create results for the words? [y/N] ").lower() == "y":
                 create_word_final_result(dao)
 
-    # TODO: use the data below to build histogram
     shared_words = check_shared_words(word_datasets)
     perc_calc = calc_perc_sharedwords(shared_words, word_datasets)
     dao.add_all_sentiment_perc(perc_calc)

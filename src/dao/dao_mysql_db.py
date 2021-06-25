@@ -518,7 +518,6 @@ class DaoMySQLDB:
         @param sentiment_word_numbers: dict that contains words counting per sentiment
         @return: a dict of all the percentages for every sentiment
         """
-        # TODO: what if the word belongs to no sentiment?
         if count is None:
             count = self.get_count(word)
 
@@ -618,6 +617,7 @@ class DaoMySQLDB:
 
                 else:
                     # TODO: wait the natural func
+                    # TODO: dump new_lexicon
                     if token not in list_new_lexicon:
                         with self.__connect_db() as connection:
                             with connection.cursor() as cursor:
@@ -835,22 +835,6 @@ class DaoMySQLDB:
                             result["popularity"][t["type"]] = t["freq_perc"]
 
         return result
-
-    def get_sentiments_popularity(self) -> dict:
-        """
-        Gets the usage percentage of lexical words in tweets
-        @return: a dict of all the percentages for every sentiment
-        """
-        freq = {}
-        with self.__connect_db() as connection:
-            with connection.cursor() as cursor:
-                sql = "SELECT `id`, `type`, SUM(`freq_perc`) AS tot " \
-                      "FROM `word_in_sentiment` RIGHT JOIN `sentiment` ON `id` = `sentiment_id` " \
-                      "GROUP BY `id`"
-                cursor = _execute_statement(cursor, sql, [])
-                for t in cursor.fetchall():
-                    freq[t["type"]] = t["tot"]
-        return freq
 
     def add_all_sentiment_perc(self, sentiment_percentages: dict):
         """

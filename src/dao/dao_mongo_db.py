@@ -186,18 +186,3 @@ class DaoMongoDB:
     def push_results(self, result_list):
         results = self.__get_collection_address("results")
         results.insert_many(result_list)
-
-    def get_sentiments_popularity(self) -> dict:
-        """
-        Gets the usage percentage of lexical words in tweets
-        @return: a dict of all the percentages for every sentiment
-        """
-        results = self.__get_collection_address("results").find({})
-        sentiments_popularity = {}
-        sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
-        for sentiment in sentiments:
-            sentiments_popularity[sentiment] = 0
-        for res in results:
-            for s in res["popularity"]:
-                sentiments_popularity[s] += res["popularity"][s]
-        return sentiments_popularity
