@@ -263,7 +263,7 @@ def create_new_lexicon(word_datasets):
         for word in dataset.keys():
             if word not in existent_words:
                 new_wordlist.append(word)
-    return new_wordlist
+    return list(dict.fromkeys(new_wordlist))
 
 
 def quickstart(dao: Dao):
@@ -305,13 +305,14 @@ def quickstart(dao: Dao):
 
     if input("Do you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
         create_definitions(word_datasets, dao)  # toml files
-        if dao.is_mongodb():
-            dump_definitions_mongodb()
-        else:
-            dao.dump_definitions()
-        if dao.is_mongodb():
-            if input("Do you want to create results for the words? [y/N] ").lower() == "y":
-                create_word_final_result(dao)
+    print("\n\tAdding word definitions...")
+    if dao.is_mongodb():
+        dump_definitions_mongodb()
+    else:
+        dao.dump_definitions()
+    if dao.is_mongodb():
+        if input("Do you want to create results for the words? [y/N] ").lower() == "y":
+            create_word_final_result(dao)
 
     shared_words = check_shared_words(word_datasets)
     perc_calc = calc_perc_sharedwords(shared_words, word_datasets)
