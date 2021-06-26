@@ -192,7 +192,7 @@ def create_word_final_result(dao):
     word_datasets = []
     sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
     for sentiment in sentiments:
-        word_datasets.append(dao.get_counts(sentiment, '_words'))
+        word_datasets.append(dao.get_counts(sentiment, 'words'))
 
     result_list = []
     input_set = []
@@ -303,7 +303,7 @@ def quickstart(dao: Dao):
     dao.build_sentiments(word_datasets, emoji_datasets, emoticons_datasets, hashtag_datasets)
     dao.add_tweets_tokens(tweets_tokens)  # used in relational db
 
-    if input("Do you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
+    if input("\n\tDo you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
         create_definitions(word_datasets, dao)  # toml files
     print("\n\tAdding word definitions...")
     if dao.is_mongodb():
@@ -311,7 +311,7 @@ def quickstart(dao: Dao):
     else:
         dao.dump_definitions()
     if dao.is_mongodb():
-        if input("Do you want to create results for the words? [y/N] ").lower() == "y":
+        if input("\n\tDo you want to create results for the words? [y/N] ").lower() == "y":
             create_word_final_result(dao)
 
     shared_words = check_shared_words(word_datasets)
