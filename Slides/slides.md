@@ -129,7 +129,6 @@ def process_dataset(tweets: dict, sentiment: str):
     for tweet_id, phrase in tweets.items():
         processed_phrase = process_phrase(phrase, stopset)
         wordlist.append(processed_phrase)
-        insert_tweet_token(tweet_id, processed_phrase)
     count_tuples = count_words(wordlist)
     most_used_hashtags = count_hashtags(count_tuples)
     emojis, emoticons = count_emojis(count_tuples)
@@ -181,3 +180,114 @@ def get_slang_definition(word):
 Possiamo osservare come, essendo Urban Dictionary un dizionario di comunità, debba essere selezionata la
 "risorsa migliore" tra quelle esistenti, andando a selezionare solo quella con like > dislike e con
 like molto maggiori tra tutte le definizioni recuperate.
+
+---
+
+# Codice: Dao
+
+* **Input**: Il tipo di DB che si intende utilizzare
+* **Output**: Nessuno.
+* **Spiegazione**: Da questa classe vengono chiamati i metodi per entrambi i database in egual modo,
+  comportandosi effettivamente come "sovraclasse" per dao_mongo e dao_mysql.
+  
+---
+
+# I/O: Dao
+
+* Chiamata ai metodi della classe dao_mongo per le operazioni da/a MongoDB
+* Chiamata ai metodi della classe dao_mysql per le operazioni da/a MySQL
+
+---
+
+# Esempio: Dao
+
+```python
+    def get_definition(self, word: str, sentiment: str = "") -> str:
+        """
+        Given a word it returns the correct definition, given that
+        it is already stored on the database
+        @param word: the word to search the definition for
+        @param sentiment: (optional) the sentiment to search it for
+        @return: the definition of the word
+        """
+        if self.type_db:
+            return self.dao_type.get_definition(word.lower())
+        else:
+            return self.dao_type.get_definition(word.lower(), sentiment.lower())
+```
+Si può notare come molte delle chiamate ai metodi dei due database, nonostante si tratti
+delle stesse risorse, debbano essere trattate in maniera totalmente diversa, a seconda
+delle differenti situazioni.
+
+---
+
+# Codice: dao_mongo_db (1)
+
+* Gestisce **tutte le operazioni** da e verso MongoDB
+* Inizializza e popola il DB delle informazioni necessarie, se richiesto
+
+```python
+    def build_db(self, sentiments, words, emoticons, emojis, twitter_paths):
+        print("Dropping the previous database...")
+        self.database.command('dropDatabase')
+
+        print("Inserting the tweets on the database...")
+        for index, sentiment in enumerate(sentiments):
+            tweet_document = self.database[f'{sentiment}_tweets']
+            self.__insert_tweets(tweet_document, twitter_paths[index], sentiment)
+            word_document = self.database[f'{sentiment}_words']
+            self.__insert_words(word_document, words, index)
+            emoji_document = self.database[f'{sentiment}_emoji']
+            emoji_document.insert(emojis)
+            emoticon_document = self.database[f'{sentiment}_emoticons']
+            emoticon_document.insert(emoticons)
+```
+* Ogni singola operazione è stata divisa in sotto-operazioni convenienti per rendere
+  leggibile il proprio codice (come `__insert_tweets()` oppure `__insert_words()`)
+  
+---
+
+# Codice: dao_mongo_db (2)
+
+<img src="https://i.imgur.com/Z3mbj8x.png" class="h-80 rounded shadow">
+
+Alcuni dei metodi utilizzati per comunicare in maniera conveniente con mongo_db
+
+---
+
+# dao_mongo_db: Vantaggi nel progetto
+
+* **Elasticità** nella definizione di come una struttura deve essere utilizzata o creata
+* Non esiste affatto uno schema a cui bisogna "aderire fedelmente", tutti i dati sono BSON o **JSON**,
+  convertiti a dizionari Python, nel nostro caso specifico
+* Buon supporto per linguaggi di programmazione ad alto livello, ad esempio Python, per le operazioni
+  fondamentali
+* Setup per la produzione facile
+* Utilizzo di **secondary index** (anche nested) per velocizzare una query di ricerca (vd. nostro utilizzo
+  in results)
+* Scalabilità assoluta che si adatta facilmente a progetti in continua evoluzione
+* Aiuta nella scrittura di codice pulito, veloce e leggibile
+* Velocità insuperabile di data deposit e retrieval
+* Facile da esplorare con le find()
+
+---
+
+# dao_mongo_db: Svantaggi nel progetto
+
+* Proprio il fatto di essere schema-less rende difficile la definizione di una **struttura generale** di come deve essere
+  trattato il DB, come ogni oggetto deve essere richiesto ed inviato, e alle volte si crea del *disordine* quando
+  non si riesce a dare una forma alla struttura generale dei dati
+* Ci si ritrova facilmente in situazioni di ridondanza di dati in diverse tabelle
+* Utilizzo di memoria esagerato, soprattutto per quanto riguarda indici
+* Necessità di utilizzare alle volte dei **trucchetti** per far "entrare" delle strutture dati in JSON
+
+---
+
+# dao_mongo_db: Performance in produzione
+
+* MongoDB completa la **build dei componenti base del database** (lista di tweet, words, emoji, emoticon da utilizzare)
+  in **23 secondi** su una connessione 5MBps in download e 3MBps in upload, dunque il vero ostacolo non è tanto il database
+  quanto invece la velocità di connessione.
+* MongoDB completa l'intero processo (Build, Natural Language Processing, Creazione new lexicon, Creazione results, Wordclouds)
+  in **120 secondi circa** su un Replica Set da 3 nodi.
+* MongoDB, a fine elaborazione dei file di progetto, ha un'occupazione in memoria di **94MB** circa, di cui 22 per i results
