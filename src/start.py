@@ -2,7 +2,7 @@ from pprint import pprint
 from timeit import default_timer as timer
 
 from dao.dao import Dao
-from natural import quickstart, create_word_final_result
+from natural import quickstart
 from src.graphs import build_histogram_matplotlib
 from src.wordcloudgenerator import WordCloudCreator
 
@@ -41,15 +41,15 @@ def test_query(db_type="MongoDB"):
 if __name__ == '__main__':
     # TODO: test  MongoDB
     # TODO: compare MySQL and MongoDB data
-    # db_type = "MySQL"  # MongoDB / MySQL
-    # dao = start_comparison(db_type)
-    # test_query(db_type)
+    db_type = "MySQL"  # MongoDB / MySQL
+    dao = start_comparison(db_type)
+    test_query(db_type)
 
     if input("Do you want to generate the Wordclouds? This could take 10 minutes or more! [y/N] ").lower() == "y":
         wordcl = WordCloudCreator(Dao(True))
         wordcl.generate()
 
-    # sentiment_percentages = Dao(True).get_sentiment_percentages()
-    # graph_data = {sentiment: sentiment_percentages[sentiment][0] for sentiment in sentiment_percentages}
-    # build_histogram_matplotlib(graph_data, '% words [lex resources] in tweets')
+    sentiment_percentages = Dao(True).get_sentiment_percentages()
+    graph_data = {sentiment: sentiment_percentages[sentiment][0] for sentiment in sentiment_percentages}
+    build_histogram_matplotlib(graph_data, '% words [lex resources] in tweets')
 
