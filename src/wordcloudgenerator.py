@@ -16,14 +16,14 @@ class WordCloudCreator:
     def generate(self):
         sentiments = ['anger', 'anticipation', 'disgust', 'fear', 'joy', 'sadness', 'surprise', 'trust']
         for sentiment in sentiments:
-            self.__generate_emotion_plot(self.dao.get_counts(sentiment, '_words'), f'{sentiment}')
+            self.__generate_emotion_plot(self.dao.get_counts(sentiment, 'words'), f'{sentiment}')
             if sentiment == 'anger' or sentiment == 'fear':
-                self.__generate_emotion_plot(self.dao.get_counts(sentiment, '_emoji'), f'{sentiment}_emoji',
+                self.__generate_emotion_plot(self.dao.get_counts(sentiment, 'emoji'), f'{sentiment}_emoji',
                                              emoji=True, extension='png')
             else:
-                self.__generate_emotion_plot(self.dao.get_counts(sentiment, '_emoji'), f'{sentiment}_emoji',
+                self.__generate_emotion_plot(self.dao.get_counts(sentiment, 'emoji'), f'{sentiment}_emoji',
                                              emoji=True)
-            self.__generate_emoticon_plot(self.dao.get_counts(sentiment, '_emoticon'), f'{sentiment}')
+            self.__generate_emoticon_plot(self.dao.get_counts(sentiment, 'emoticon'), f'{sentiment}')
 
     def __preprocess_wordlist(self, wordlist):
         [wordlist.pop(key) for key in self.__get_stopwords() if key in wordlist]

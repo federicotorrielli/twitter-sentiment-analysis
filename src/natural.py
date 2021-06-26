@@ -16,6 +16,7 @@ from src.datasets_manager import get_sentiment_words
 from src.slang import create_definitions, preparse_standard_toml_files_sentiment, preparse_slang_toml_files_sentiment
 
 tokenizer = TweetTokenizer()
+tweets_tokens = {}  # dict that contains every token per tweet
 
 
 def clean_emoticons(phrase: str):
@@ -116,14 +117,13 @@ def process_dataset(dao, tweets: dict, sentiment: str):
     start = timer()
     wordlist = []
     stopset = create_stopword_list()
-    tweets_tokens = {}
     if '_id' in tweets:
         tweets.pop('_id')
     for tweet_id, phrase in tweets.items():
         processed_phrase = process_phrase(phrase, stopset)
         wordlist.append(processed_phrase)
         tweets_tokens[tweet_id] = processed_phrase  # used in relational db
-    dao.add_tweets_tokens(tweets_tokens)  # used in relational db
+
     count_tuples = count_words(wordlist)
     most_used_hashtags = count_hashtags(count_tuples)
     emojis, emoticons = count_emojis(count_tuples)
@@ -192,7 +192,7 @@ def create_word_final_result(dao):
     word_datasets = []
     sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
     for sentiment in sentiments:
-        word_datasets.append(dao.get_counts(sentiment, '_words'))
+        word_datasets.append(dao.get_counts(sentiment, 'words'))
 
     result_list = []
     input_set = []
@@ -263,7 +263,7 @@ def create_new_lexicon(word_datasets):
         for word in dataset.keys():
             if word not in existent_words:
                 new_wordlist.append(word)
-    return new_wordlist
+    return list(dict.fromkeys(new_wordlist))
 
 
 def quickstart(dao: Dao):
@@ -299,18 +299,20 @@ def quickstart(dao: Dao):
     hashtag_datasets = [anger_hashtags, anticipation_hashtags, disgust_hashtags, fear_hashtags, joy_hashtags,
                         sadness_hashtags, surprise_hashtags, trust_hashtags]
 
-    dao.build_sentiments(word_datasets, emoji_datasets, emoticons_datasets, hashtag_datasets)
     dao.dump_new_lexicon(create_new_lexicon(word_datasets))
+    dao.build_sentiments(word_datasets, emoji_datasets, emoticons_datasets, hashtag_datasets)
+    dao.add_tweets_tokens(tweets_tokens)  # used in relational db
 
-    if input("Do you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
+    if input("\n\tDo you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
         create_definitions(word_datasets, dao)  # toml files
-        if dao.is_mongodb():
-            dump_definitions_mongodb()
-        else:
-            dao.dump_definitions()
-        if dao.is_mongodb():
-            if input("Do you want to create results for the words? [y/N] ").lower() == "y":
-                create_word_final_result(dao)
+    print("\n\tAdding word definitions...")
+    if dao.is_mongodb():
+        dump_definitions_mongodb()
+    else:
+        dao.dump_definitions()
+    if dao.is_mongodb():
+        if input("\n\tDo you want to create results for the words? [y/N] ").lower() == "y":
+            create_word_final_result(dao)
 
     shared_words = check_shared_words(word_datasets)
     perc_calc = calc_perc_sharedwords(shared_words, word_datasets)

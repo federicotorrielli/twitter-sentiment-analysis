@@ -160,7 +160,6 @@ class Dao:
         Dumps on the DBs the new words from twitter that are not present in the
         pre-existent wordlist given by the project
         @param wordlist:
-        @return:
         """
         self.dao_type.dump_new_lexicon(wordlist)
 

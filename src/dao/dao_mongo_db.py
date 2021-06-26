@@ -118,7 +118,7 @@ class DaoMongoDB:
         return self.get_document(sentiment)
 
     def get_counts(self, sentiment, token_type: str = ""):
-        sentiments_table = self.database[f'count{token_type}']
+        sentiments_table = self.database[f'count_{token_type}']
         return sentiments_table.find_one({}, {sentiment})[sentiment]
 
     def get_collection(self, collection_name):
