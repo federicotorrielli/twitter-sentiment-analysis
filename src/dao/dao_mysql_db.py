@@ -17,8 +17,8 @@ def _execute_statement(cursor, statement: str, params: [] = None):
             cursor.execute(statement, params)
     except MySQLError as error:
         print(f"Error: {error}", file=sys.stderr)
-    finally:
-        print(f"\tstatement: {cursor._last_executed}")
+    # finally:
+    #     print(f"\tstatement: {cursor._last_executed}")
 
     return cursor
 
@@ -31,8 +31,8 @@ def _executemany_statements(cursor, statement: str, params: [] = None):
             cursor.executemany(statement, params)
     except MySQLError as error:
         print(f"Error: {error}", file=sys.stderr)
-    finally:
-        print(f"\tstatement: {cursor._last_executed}")
+    # finally:
+    #     print(f"\tstatement: {cursor._last_executed}")
 
     return cursor
 
@@ -918,6 +918,9 @@ class DaoMySQLDB:
                 print("\n\tBuilding `new_lexicon` table...")
                 _executemany_statements(cursor, sql, wordlist)
                 connection.commit()
+    
+    def drop_test(self):
+        self.__drop_and_create_tables()
 
 
 if __name__ == '__main__':
@@ -925,4 +928,4 @@ if __name__ == '__main__':
     Tests
     """
     db = DaoMySQLDB()
-    print(db.get_result("hello"))
+    db.drop_test()

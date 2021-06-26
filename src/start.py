@@ -39,9 +39,8 @@ def test_query(db_type="MongoDB"):
 
 
 if __name__ == '__main__':
-    # TODO: compare MySQL and MongoDB data
-    db_type = "MySQL"  # MongoDB / MySQL
-    # db_type = "MongoDB"  # MongoDB / MySQL
+    # db_type = "MySQL"  # MongoDB / MySQL
+    db_type = "MongoDB"  # MongoDB / MySQL
     dao = start_comparison(db_type)
     test_query(db_type)
 
@@ -54,4 +53,3 @@ if __name__ == '__main__':
         sentiment_percentages.pop("_id")
     graph_data = {sentiment: sentiment_percentages[sentiment][0] for sentiment in sentiment_percentages}
     build_histogram_matplotlib(graph_data, '% words [lex resources] in tweets')
-

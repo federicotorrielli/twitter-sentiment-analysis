@@ -124,11 +124,14 @@ def process_dataset(tweets: dict, sentiment: str):
     start = timer()
     wordlist = []
     stopset = create_stopword_list()
+    tweets_tokens = {}
     if '_id' in tweets:
         tweets.pop('_id')
     for tweet_id, phrase in tweets.items():
         processed_phrase = process_phrase(phrase, stopset)
         wordlist.append(processed_phrase)
+        tweets_tokens[tweet_id] = processed_phrase  # used in relational db
+    dao.add_tweets_tokens(tweets_tokens)  # used in relational db
     count_tuples = count_words(wordlist)
     most_used_hashtags = count_hashtags(count_tuples)
     emojis, emoticons = count_emojis(count_tuples)
@@ -291,3 +294,118 @@ Alcuni dei metodi utilizzati per comunicare in maniera conveniente con mongo_db
 * MongoDB completa l'intero processo (Build, Natural Language Processing, Creazione new lexicon, Creazione results, Wordclouds)
   in **120 secondi circa** su un Replica Set da 3 nodi.
 * MongoDB, a fine elaborazione dei file di progetto, ha un'occupazione in memoria di **94MB** circa, di cui 22 per i results
+
+---
+
+# dao_mysql_db (1)
+
+* Gestisce tutte le operazioni da e verso MySQL
+* Inizializza e popola il DB delle informazioni necessarie, se richiesto
+
+```python
+    def build_db(self, sentiments, words, emoticons, emojis, twitter_paths):
+        print("Building DB")
+        self.__drop_and_create_tables()
+        print("\n\tAdding sentiments...")
+        self.__insert_sentiments(sentiments)
+        print("\n\tAdding emoticons...")
+        self.__insert_emoticons(emoticons)
+        print("\n\tAdding emojis...")
+        self.__insert_emojis(emojis)
+        print("\n\tAdding words...")
+        self.__insert_words_sentiments(words)
+
+        print("\n\tAdding tweets...")
+        assert len(sentiments) == len(twitter_paths)
+        tweets_content = {sentiment: [] for sentiment in sentiments}
+        for idx_sentiment, file_path in enumerate(twitter_paths):
+            tweets_content[sentiments[idx_sentiment]] = read_file(file_path).splitlines()
+
+        self.__insert_tweets_sentiments(tweets_content)
+```
+
+---
+
+# dao_mysql_db (2)
+
+<img src="https://i.imgur.com/iEMpSnc.png" class="h-100 rounded shadow">
+
+---
+
+# dao_mysql_db: ER (1)
+
+<img src="" class="h-100 rounded shadow">
+
+---
+
+# dao_mysql_db: ER (2)
+
+<img src="" class="h-100 rounded shadow">
+
+---
+
+# dao_mysql_db: Vantaggi nel progetto
+
+* Lista
+
+---
+
+# dao_mysql_db: Svantaggi nel progetto
+
+* Lista
+
+---
+
+# dao_mysql_db: Performance in produzione
+
+* Lista
+
+---
+layout: two-cols
+---
+
+# MongoDB
+
+This shows on the left
+
+::right::
+
+# MySQL
+
+This shows on the right
+
+---
+
+# Results
+
+Esempio di results
+
+---
+
+# Istogramma
+
+Esempio di istogramma
+
+---
+class: text-center
+---
+
+# WordClouds (Anger - Emoji)
+
+<img src="https://evilscript.altervista.org/files/img/anger_emoji_plot.png" class="h-110 rounded shadow">
+
+---
+class: text-center
+---
+
+# WordClouds (Anger - Words)
+
+<img src="https://evilscript.altervista.org/files/img/anger_plot.png" class="h-110 rounded shadow">
+
+---
+class: text-center
+---
+
+# WordClouds (Anger - Emoticons)
+
+<img src="https://evilscript.altervista.org/files/img/anger_emoticon_plot.png" class="h-110 rounded shadow">
