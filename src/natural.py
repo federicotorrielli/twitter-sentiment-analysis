@@ -300,8 +300,8 @@ def quickstart(dao: Dao):
                         sadness_hashtags, surprise_hashtags, trust_hashtags]
 
     dao.dump_new_lexicon(create_new_lexicon(word_datasets))
-    dao.add_tweets_tokens(tweets_tokens)  # used in relational db
     dao.build_sentiments(word_datasets, emoji_datasets, emoticons_datasets, hashtag_datasets)
+    dao.add_tweets_tokens(tweets_tokens)  # used in relational db
 
     if input("Do you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
         create_definitions(word_datasets, dao)  # toml files

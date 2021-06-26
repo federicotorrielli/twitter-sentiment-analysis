@@ -39,23 +39,17 @@ def test_query(db_type="MongoDB"):
 
 
 if __name__ == '__main__':
-    # dao = start_comparison("MongoDB")
-    dao2 = start_comparison("MySQL")
-    #
-    # test_query()
-    # test_query("MySQL")
-    #
-    # # TODO: Wordclouds from MySQL too
-    # if input("Do you want to generate the Wordclouds? This could take 10 minutes or more! [y/N] ").lower() == "y":
-    #     wordcl = WordCloudCreator(dao)
-    #     wordcl.generate()
+    # TODO: test  MongoDB
+    # TODO: compare MySQL and MongoDB data
+    # db_type = "MySQL"  # MongoDB / MySQL
+    # dao = start_comparison(db_type)
+    # test_query(db_type)
 
-    # graph_data = {
-    #     "joy": 24.5,
-    #     "anger": 86,
-    #     "fear": 50
-    # }
-    # sentiment_percentages = Dao(False).get_sentiment_percentages()
+    if input("Do you want to generate the Wordclouds? This could take 10 minutes or more! [y/N] ").lower() == "y":
+        wordcl = WordCloudCreator(Dao(True))
+        wordcl.generate()
+
+    # sentiment_percentages = Dao(True).get_sentiment_percentages()
     # graph_data = {sentiment: sentiment_percentages[sentiment][0] for sentiment in sentiment_percentages}
     # build_histogram_matplotlib(graph_data, '% words [lex resources] in tweets')
 

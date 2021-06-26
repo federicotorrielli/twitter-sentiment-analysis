@@ -50,6 +50,7 @@ class DaoMySQLDB:
         self.list_new_lexicon = None
         self.list_emojis = None
         self.list_emoticons = None
+        self.list_hashtags = None
 
     def __connect_db(self):
         """
@@ -359,7 +360,7 @@ class DaoMySQLDB:
         Inserts records into 'word' table
         @param tweets: list of tweets
         """
-        # TODO: make one func easy_executemany(query: str, params: list(tuple()), message: str)
+        # TODO: [optional] make one func easy_executemany(query: str, params: list(tuple()), message: str)
         with self.__connect_db() as connection:
             with connection.cursor() as cursor:
                 cursor.execute('SET NAMES utf8mb4')
@@ -391,7 +392,6 @@ class DaoMySQLDB:
 
                 for word in sentiments_words:
                     for index, sentiment in enumerate(sentiments_words[word]):
-                        # TODO: change sentiment from int to string
                         sql_belongs_to_params += [(sentiment + 1, self.list_words[word])]
 
                 print("\n\tBuilding `belongs_to` table...")
@@ -442,7 +442,6 @@ class DaoMySQLDB:
         Inserts records into 'twitter_message' table and relations with 'sentiment' table
         @param sentiments_tweets: set with sentiments as keys and list of tweets as values
         """
-        # TODO: optimize func
         all_tweets = [tweet for sentiment in sentiments_tweets for tweet in sentiments_tweets[sentiment]]
         self.__insert_tweets(all_tweets)
         list_tweets = self.get_tweets_list()
@@ -608,7 +607,6 @@ class DaoMySQLDB:
         Inserts the connection between tweets and tokens
         @param tweets_tokens: {tweet_id: [tokens]...}
         """
-        # TODO: optimize func
         if self.list_words is None:
             self.list_words = self.get_tokens("word")
         if self.list_new_lexicon is None:
@@ -617,12 +615,15 @@ class DaoMySQLDB:
             self.list_emojis = self.get_tokens("emoji")
         if self.list_emoticons is None:
             self.list_emoticons = self.get_tokens("emoticon")
+        if self.list_hashtags is None:
+            self.list_hashtags = self.get_tokens("hashtag")
 
         # data_token = {tweet_id: {token_id: count,...},...}
         data_word = {}
         data_new = {}
         data_emoji = {}
         data_emoticon = {}
+        data_hashtag = {}
 
         for tweet_id in tweets_tokens:
             for token in tweets_tokens[tweet_id]:
@@ -650,6 +651,14 @@ class DaoMySQLDB:
                     else:
                         data_emoticon[tweet_id][self.list_emoticons[token]] += 1
 
+                elif token in self.list_hashtags:
+                    if tweet_id not in data_hashtag or self.list_hashtags[token] not in data_hashtag[tweet_id]:
+                        if tweet_id not in data_hashtag:
+                            data_hashtag[tweet_id] = {}
+                        data_hashtag[tweet_id][self.list_hashtags[token]] = 1
+                    else:
+                        data_hashtag[tweet_id][self.list_hashtags[token]] += 1
+
                 elif token in self.list_new_lexicon:
                     if tweet_id not in data_new or self.list_new_lexicon[token] not in data_new[tweet_id]:
                         if tweet_id not in data_new:
@@ -662,7 +671,8 @@ class DaoMySQLDB:
             "word": data_word,
             "new_lexicon": data_new,
             "emoji": data_emoji,
-            "emoticon": data_emoticon
+            "emoticon": data_emoticon,
+            "hashtag": data_hashtag
         }
         self.insert_tweets_tokens(data_to_insert)
 
@@ -719,6 +729,8 @@ class DaoMySQLDB:
         """
         param = "count" if counts else "freq_perc"
         data = {}
+        if token_type == "words":
+            token_type = "word"
         with self.__connect_db() as connection:
             with connection.cursor() as cursor:
                 sql = f"SELECT `{token_type}`, `{param}` " \
@@ -748,7 +760,6 @@ class DaoMySQLDB:
         @param emoji_datasets: a list of dicts for every emoji_frequency sentiment
         @param emoticon_datasets: a list of dicts for every emoticon_frequency sentiment
         """
-        # TODO: optimize func
         if self.list_words is None:
             self.list_words = self.get_tokens("word")
         if self.list_emojis is None:
@@ -758,7 +769,7 @@ class DaoMySQLDB:
 
         hashtags_to_insert = [hashtag for hashtags in hashtag_datasets for hashtag in hashtags]
         self.insert_hashtags(list(dict.fromkeys(hashtags_to_insert)))
-        list_hashtag = self.get_tokens("hashtag")
+        self.list_hashtags = self.get_tokens("hashtag")
         sentiments_count = {sentiment: self.__get_word_numbers(sentiment) for sentiment in sentiments}
 
         for index, sentiment in enumerate(sentiments):
@@ -814,8 +825,8 @@ class DaoMySQLDB:
                                  "VALUES (%s, %s, %s)"
                     sql_params = []
                     for hashtag in hashtag_datasets[index]:
-                        if hashtag in list_hashtag:
-                            sql_params += [(hashtag_datasets[index][hashtag], id_sentiment, list_hashtag[hashtag])]
+                        if hashtag in self.list_hashtags:
+                            sql_params += [(hashtag_datasets[index][hashtag], id_sentiment, self.list_hashtags[hashtag])]
                     if sql_params is not []:
                         print("\n\tBuilding `hashtag_in_sentiment` table...")
                         _executemany_statements(cursor, sql_insert, sql_params)
