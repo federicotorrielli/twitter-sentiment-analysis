@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import pprint
 
 import pymongo
 from src.file_manager import read_file
@@ -84,7 +85,7 @@ class DaoMongoDB:
     def create_index(self, index: str, table: str):
         t = self.__get_collection_address(table)
         t.create_index([(index, pymongo.ASCENDING)])
-        
+
     def add_all_sentiment_perc(self, sentiment_percentages):
         t = self.__get_collection_address("sentiment_percentages")
         t.insert_one(sentiment_percentages)
@@ -155,7 +156,7 @@ class DaoMongoDB:
             if sentiment in count:
                 final_list[sentiment] = round(count[sentiment] / self.__get_word_numbers(sentiment), 4)
         return final_list
-    
+
     def get_sentiment_percentages(self) -> {}:
         return self.__get_collection_address("sentiment_percentages").find_one()
 
@@ -186,3 +187,10 @@ class DaoMongoDB:
     def push_results(self, result_list):
         results = self.__get_collection_address("results")
         results.insert_many(result_list)
+
+
+if __name__ == '__main__':
+    dao = DaoMongoDB()
+    pprint.pprint(dao.get_result("computer"))
+    pprint.pprint(dao.get_result("shoulda"))
+    pprint.pprint(dao.get_result("yo"))

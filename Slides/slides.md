@@ -374,16 +374,114 @@ This shows on the left
 This shows on the right
 
 ---
+layout: two-cols
+---
 
-# Results
+# Results: Standard
 
-Esempio di results
+```python
+{'_id': ObjectId('60d6f42d533910561a713fd9'),
+ 'count': {'anger': 94,
+           'anticipation': 53,
+           'disgust': 50,
+           'fear': 42,
+           'joy': 17,
+           'sadness': 73,
+           'surprise': 76,
+           'trust': 11},
+ 'def_type': 'standard',
+ 'definition': 'An electronic device for storing and processing data, '
+               'typically in binary form, according to instructions given to '
+               'it in a variable program.',
+ 'popularity': {'anger': 0.0606,
+                'anticipation': 0.0548,
+                'disgust': 0.0329,
+                'fear': 0.027,
+                'joy': 0.004,
+                'sadness': 0.0578,
+                'surprise': 0.1364,
+                'trust': 0.0089},
+ 'typo': 'no',
+ 'word': 'computer'}
+```
 
+::right::
+
+# Results: Slang
+
+```python
+{'_id': ObjectId('60d6f42d533910561a706db8'),
+ 'count': {'anger': 30,
+           'anticipation': 29,
+           'disgust': 28,
+           'fear': 19,
+           'joy': 13,
+           'sadness': 35,
+           'surprise': 18,
+           'trust': 6},
+ 'def_type': 'slang',
+ 'definition': '[Short] for "should have".',
+ 'popularity': {'anger': 0.0193,
+                'anticipation': 0.03,
+                'disgust': 0.0184,
+                'fear': 0.0122,
+                'joy': 0.0031,
+                'sadness': 0.0277,
+                'surprise': 0.0323,
+                'trust': 0.0049},
+ 'typo': 'no',
+ 'word': 'shoulda'}
+```
+
+---
+layout: two-cols
+---
+
+# Results: Typo
+
+```python
+{'_id': ObjectId('60d6f42d533910561a702d03'),
+ 'count': {'anger': 259,
+           'anticipation': 170,
+           'disgust': 284,
+           'fear': 144,
+           'joy': 287,
+           'sadness': 157,
+           'surprise': 300,
+           'trust': 188},
+ 'def_type': 'standard',
+ 'definition': 'NOTHING FOUND',
+ 'popularity': {'anger': 0.1669,
+                'anticipation': 0.1756,
+                'disgust': 0.187,
+                'fear': 0.0925,
+                'joy': 0.0676,
+                'sadness': 0.1242,
+                'surprise': 0.5386,
+                'trust': 0.1526},
+ 'typo': 'yes',
+ 'word': 'yo'}
+```
+
+::right::
+
+# Spiegazione
+
+Il neologismo "yo", nonostante sia utilizzato tantissimo tra i tweet trovati
+si configura come un **typo** della parola *"you"*, spesso usato come abbreviazione.
+
+Per questa motivazione non viene trovata alcun tipo di definizione in entrambi i
+dizionari, e viene perciò catalogato come *typo* dal sistema!
+
+---
+class: text-center
 ---
 
 # Distribuzione delle emozioni di Plutchik nel corpus
 
-<img src="https://evilscript.altervista.org/files/img/barchart.png" class="h-50 rounded">
+<center>
+  <img src="http://evilscript.altervista.org/files/img/barchart.png" class="h-80 rounded">
+</center>
 
 ---
 
