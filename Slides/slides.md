@@ -381,9 +381,9 @@ Esempio di results
 
 ---
 
-# Istogramma
+# Distribuzione delle emozioni di Plutchik nel corpus
 
-Esempio di istogramma
+<img src="https://evilscript.altervista.org/files/img/barchart.png" class="h-50 rounded">
 
 ---
 
