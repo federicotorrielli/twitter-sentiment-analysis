@@ -124,14 +124,13 @@ def process_dataset(tweets: dict, sentiment: str):
     start = timer()
     wordlist = []
     stopset = create_stopword_list()
-    tweets_tokens = {}
     if '_id' in tweets:
         tweets.pop('_id')
     for tweet_id, phrase in tweets.items():
         processed_phrase = process_phrase(phrase, stopset)
         wordlist.append(processed_phrase)
         tweets_tokens[tweet_id] = processed_phrase  # used in relational db
-    dao.add_tweets_tokens(tweets_tokens)  # used in relational db
+
     count_tuples = count_words(wordlist)
     most_used_hashtags = count_hashtags(count_tuples)
     emojis, emoticons = count_emojis(count_tuples)
