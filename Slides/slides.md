@@ -386,25 +386,97 @@ Esempio di results
 Esempio di istogramma
 
 ---
-class: text-center
----
 
-# WordClouds (Anger - Emoji)
+# WordClouds (Anger)
 
-<img src="https://evilscript.altervista.org/files/img/anger_emoji_plot.png" class="h-110 rounded shadow">
-
----
-class: text-center
----
-
-# WordClouds (Anger - Words)
-
-<img src="https://evilscript.altervista.org/files/img/anger_plot.png" class="h-110 rounded shadow">
+<div>
+  <img src="https://evilscript.altervista.org/files/img/anger_plot.png" class="h-60 rounded" style="margin: 0 auto">
+</div>
+<div grid="~ cols-2 gap-4">
+  <img src="https://evilscript.altervista.org/files/img/anger_emoticon_plot.png" class="h-50 rounded">
+  <img src="https://evilscript.altervista.org/files/img/anger_emoji_plot.png" class="h-50 rounded">
+</div>
 
 ---
-class: text-center
+
+# WordClouds (Anticipation)
+
+<div>
+  <img src="https://evilscript.altervista.org/files/img/anticipation_plot.png" class="h-60 rounded" style="margin: 0 auto">
+</div>
+<div grid="~ cols-2 gap-4">
+  <img src="https://evilscript.altervista.org/files/img/anticipation_emoticon_plot.png" class="h-50 rounded">
+  <img src="https://evilscript.altervista.org/files/img/anticipation_emoji_plot.png" class="h-50 rounded">
+</div>
+
 ---
 
-# WordClouds (Anger - Emoticons)
+# WordClouds (Disgust)
 
-<img src="https://evilscript.altervista.org/files/img/anger_emoticon_plot.png" class="h-110 rounded shadow">
+<div>
+  <img src="https://evilscript.altervista.org/files/img/disgust_plot.png" class="h-60 rounded" style="margin: 0 auto">
+</div>
+<div grid="~ cols-2 gap-4">
+  <img src="https://evilscript.altervista.org/files/img/disgust_emoticon_plot.png" class="h-50 rounded">
+  <img src="https://evilscript.altervista.org/files/img/disgust_emoji_plot.png" class="h-50 rounded">
+</div>
+
+---
+
+# WordClouds (Fear)
+
+<div>
+  <img src="https://evilscript.altervista.org/files/img/fear_plot.png" class="h-60 rounded" style="margin: 0 auto">
+</div>
+<div grid="~ cols-2 gap-4">
+  <img src="https://evilscript.altervista.org/files/img/fear_emoticon_plot.png" class="h-50 rounded">
+  <img src="https://evilscript.altervista.org/files/img/fear_emoji_plot.png" class="h-50 rounded">
+</div>
+
+---
+
+# WordClouds (Joy)
+
+<div>
+  <img src="https://evilscript.altervista.org/files/img/joy_plot.png" class="h-60 rounded" style="margin: 0 auto">
+</div>
+<div grid="~ cols-2 gap-4">
+  <img src="https://evilscript.altervista.org/files/img/joy_emoticon_plot.png" class="h-50 rounded">
+  <img src="https://evilscript.altervista.org/files/img/joy_emoji_plot.png" class="h-50 rounded">
+</div>
+
+---
+
+# WordClouds (Sadness)
+
+<div>
+  <img src="https://evilscript.altervista.org/files/img/sadness_plot.png" class="h-60 rounded" style="margin: 0 auto">
+</div>
+<div grid="~ cols-2 gap-4">
+  <img src="https://evilscript.altervista.org/files/img/sadness_emoticon_plot.png" class="h-50 rounded">
+  <img src="https://evilscript.altervista.org/files/img/sadness_emoji_plot.png" class="h-50 rounded">
+</div>
+
+---
+
+# WordClouds (Surprise)
+
+<div>
+  <img src="https://evilscript.altervista.org/files/img/surprise_plot.png" class="h-60 rounded" style="margin: 0 auto">
+</div>
+<div grid="~ cols-2 gap-4">
+  <img src="https://evilscript.altervista.org/files/img/surprise_emoticon_plot.png" class="h-50 rounded">
+  <img src="https://evilscript.altervista.org/files/img/surprise_emoji_plot.png" class="h-50 rounded">
+</div>
+
+---
+
+# WordClouds (Trust)
+
+<div>
+  <img src="https://evilscript.altervista.org/files/img/trust_plot.png" class="h-60 rounded" style="margin: 0 auto">
+</div>
+<div grid="~ cols-2 gap-4">
+  <img src="https://evilscript.altervista.org/files/img/trust_emoticon_plot.png" class="h-50 rounded">
+  <img src="https://evilscript.altervista.org/files/img/trust_emoji_plot.png" class="h-50 rounded">
+</div>
