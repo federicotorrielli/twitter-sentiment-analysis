@@ -191,6 +191,4 @@ class DaoMongoDB:
 
 if __name__ == '__main__':
     dao = DaoMongoDB()
-    pprint.pprint(dao.get_result("computer"))
-    pprint.pprint(dao.get_result("shoulda"))
-    pprint.pprint(dao.get_result("yo"))
+    pprint.pprint(dao.get_sentiment_percentages())

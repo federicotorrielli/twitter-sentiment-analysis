@@ -474,14 +474,56 @@ Per questa motivazione non viene trovata alcun tipo di definizione in entrambi i
 dizionari, e viene perciò catalogato come *typo* dal sistema!
 
 ---
-class: text-center
+layout: two-cols
 ---
 
 # Distribuzione delle emozioni di Plutchik nel corpus
 
-<center>
-  <img src="http://evilscript.altervista.org/files/img/barchart.png" class="h-80 rounded">
-</center>
+<img src="http://evilscript.altervista.org/files/img/barchart.png" class="h-70 rounded">
+
+::right::
+
+# Percentuali
+
+`(perc_presence_lex_res, perc_presence_twitter)`
+
+```python
+{'anger': [0.38497652582159625, 0.024783147459727387],
+ 'anticipation': [0.5272727272727272, 0.017438364401683705],
+ 'disgust': [0.46324891908585547, 0.022746572849690647],
+ 'fear': [0.4219228413962033, 0.023552334723456622],
+ 'joy': [0.26741110784601824, 0.07440516747976343],
+ 'sadness': [0.4308390022675737, 0.018962075848303395],
+ 'surprise': [0.5454545454545454, 0.008794872531831116],
+ 'trust': [0.4939073923639318, 0.01806405609364787]}
+```
+
+---
+
+# Calcolo delle percentuali (Natural)
+
+```python
+def calc_perc_sharedwords(shared_words, word_datasets):
+    """
+    Return a set of tuples (perc_presence_lex_res, perc_presence_twitter)
+    @param shared_words: dict of list af words foreach Plutchik emotion
+    @param word_datasets: datasets of phrases
+    @return: set of tuples (perc_presence_lex_res, perc_presence_twitter)
+    """
+    lex_words = get_lexical_Nlines()
+    returndict = {}
+    index = 0
+    sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
+    for wordlist in shared_words.values():
+        n_shared_words = len(wordlist)
+        n_twitter_words = len(word_datasets[index])
+        print(f"Dataset: {index}, #Shared: {n_shared_words}, #Twitter: {n_twitter_words}, #Lex: {lex_words[index]}")
+        perc_presence_lex_res = n_shared_words / lex_words[index]
+        perc_presence_twitter = n_shared_words / n_twitter_words
+        returndict[sentiments[index]] = (perc_presence_lex_res, perc_presence_twitter)
+        index += 1
+    return returndict
+```
 
 ---
 

@@ -167,15 +167,15 @@ def calc_perc_sharedwords(shared_words, word_datasets):
     @param word_datasets: datasets of phrases
     @return: set of tuples (perc_presence_lex_res, perc_presence_twitter)
     """
-    linelist = get_lexical_Nlines()
+    lex_words = get_lexical_Nlines()
     returndict = {}
     index = 0
     sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
     for wordlist in shared_words.values():
         n_shared_words = len(wordlist)
         n_twitter_words = len(word_datasets[index])
-        print(f"Dataset: {index}, #Shared: {n_shared_words}, #Twitter: {n_twitter_words}, #Lex: {linelist[index]}")
-        perc_presence_lex_res = n_shared_words / linelist[index]
+        print(f"Dataset: {index}, #Shared: {n_shared_words}, #Twitter: {n_twitter_words}, #Lex: {lex_words[index]}")
+        perc_presence_lex_res = n_shared_words / lex_words[index]
         perc_presence_twitter = n_shared_words / n_twitter_words
         returndict[sentiments[index]] = (perc_presence_lex_res, perc_presence_twitter)
         index += 1
