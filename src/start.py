@@ -44,9 +44,8 @@ if __name__ == '__main__':
     dao = start_comparison(db_type)
     test_query(db_type)
 
-    if input("Do you want to generate the Wordclouds? This could take 10 minutes or more! [y/N] ").lower() == "y":
-        wordcl = WordCloudCreator(dao)
-        wordcl.generate()
+    wordcl = WordCloudCreator(dao)
+    wordcl.generate()
 
     sentiment_percentages = dao.get_sentiment_percentages()
     if dao.is_mongodb():

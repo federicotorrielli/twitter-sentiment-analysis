@@ -333,13 +333,13 @@ Alcuni dei metodi utilizzati per comunicare in maniera conveniente con mongo_db
 
 # dao_mysql_db: ER (1)
 
-<img src="http://evilscript.altervista.org/files/img/er1.png" class="h-70 rounded">
+<img src="http://evilscript.altervista.org/files/img/er1.png" class="h-100 rounded">
 
 ---
 
 # dao_mysql_db: ER (2)
 
-<img src="http://evilscript.altervista.org/files/img/er2.png" class="h-70 rounded">
+<img src="http://evilscript.altervista.org/files/img/er2.png" class="h-100 rounded">
 
 ---
 
