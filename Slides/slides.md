@@ -333,31 +333,47 @@ Alcuni dei metodi utilizzati per comunicare in maniera conveniente con mongo_db
 
 # dao_mysql_db: ER (1)
 
-<img src="" class="h-100 rounded shadow">
+<img src="http://evilscript.altervista.org/files/img/er1.png" class="h-70 rounded">
 
 ---
 
 # dao_mysql_db: ER (2)
 
-<img src="" class="h-100 rounded shadow">
+<img src="http://evilscript.altervista.org/files/img/er2.png" class="h-70 rounded">
 
 ---
 
 # dao_mysql_db: Vantaggi nel progetto
 
-* Lista
+* Schema ordinato che tende a mantenersi nel tempo
+* I dati sono consistenti a priori
+* Linguaggio **SQL** per interagire con il database: semplifica l'interazione con i dati utilizzando sfruttando una sintassi semplice
+* Flessibilità nel cambio di requisiti dell'applicazione: SQL facilita la modifiche delle interrogazioni sui dati 
+* L'operatore **JOIN** semplifica la realizzazione delle interrogazioni sui dati presenti su più tabelle sfruttando le chiavi
+* L'utilizzo di chiavi permette il check dei dati in ingresso (**PK/FK**, **CHECK** dei valori definendo i vincoli) e l'esecuzione di aggiornamenti in cascata grazie ai vincoli di chiave (**ON DELETE/ON UPDATE**)
+* L'operatore **UNIQUE** permette il controllo dei duplicati dei dati in ingresso
 
 ---
 
 # dao_mysql_db: Svantaggi nel progetto
 
-* Lista
+* Schema molto **rigido**, poco flessibile alle modifiche strutturali, è da stabilire con particolare precisione a inizio progetto
+* Non è possibile avere attributi con valori annidati e quindi bisogna operare su più tabelle utilizzando i JOIN
+* Le interrogazioni che coinvolgono più tabelle richiedono l'utilizzo dell'operatore JOIN che risulta essere "**pesante**" e lento
+* **Impedance mismatch**: è richiesta una continua "traduzione" delle strutture dati, MySQL ha una struttura **tabellare** mentre l'applicazione tende ad utilizzare strutture dati più avanzate che vengono scelte in funzione delle necessità applicative (ad esempio, nel codice è frequente l'utilizzo di **dict**)
+* Non è adatto a lavorare in maniera distribuita poiché strettamente legato alle proprietà ACID
+* Non essendo un **replica set**, è necessario prevedere un sistema di backup dei dati che permetta il recupero in caso di guasto
+
 
 ---
 
 # dao_mysql_db: Performance in produzione
 
-* Lista
+* MySQL completa la **build dei componenti del database** (lista di tweet, sentimenti, words, emoji, emoticon da utilizzare)
+  in **59 secondi** su una connessione 5MBps in download e 3MBps in upload e **30 secondi circa** su localhost.
+* MySQL completa l'intero processo (Build, Natural Language Processing, Creazione new lexicon, Creazione results, Wordclouds)
+  in **1 ora circa** (**262 secondi** su localhost).
+* MySQL, a fine elaborazione dei file di progetto, ha un'occupazione in memoria di **406MB** circa
 
 ---
 layout: two-cols
@@ -365,13 +381,45 @@ layout: two-cols
 
 # MongoDB
 
-This shows on the left
+* Base di dati documentale
+
+* NoSQL
+
+* Schemaless
+
+* Organizzazione dei dati flessibile
+
+* Interazione con i dati veloce
+
+* All'aumentare dei dati, si mantengono le prestazioni
+
+* Poco flessibile al variare delle interrogazioni
+
+* Strutture dati vicine al codice
+
+* Lavora bene su cluster di macchine
 
 ::right::
 
 # MySQL
 
-This shows on the right
+* Modello relazionale
+
+* SQL
+
+* Schema dei dati rigido
+
+* Dati organizzati in tabelle
+
+* Interazione con i dati più lento
+
+* All'aumentare dei dati, le prestazioni peggiorano
+
+* Flessibile al variare delle interrogazioni (SQL)
+
+* Impedance mismatch
+
+* Non adatto a una soluzione distribuita 
 
 ---
 layout: two-cols
