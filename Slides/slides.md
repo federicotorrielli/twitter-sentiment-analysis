@@ -84,7 +84,7 @@ layout: center
 
 ### Produzione:
 
-* MongoDB Atlas Cluster (location: Francoforte)
+* MongoDB Atlas Cluster (location: Francoforte) Con autosharding abilitato
 * ScaleGrid Linode (location: Francoforte)
 
 ---

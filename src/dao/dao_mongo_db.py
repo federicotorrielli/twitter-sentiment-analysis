@@ -2,6 +2,7 @@
 import pprint
 
 import pymongo
+from tqdm import tqdm
 from src.file_manager import read_file
 
 
@@ -34,7 +35,7 @@ class DaoMongoDB:
         self.database.command('dropDatabase')
 
         print("Inserting the tweets on the database...")
-        for index, sentiment in enumerate(sentiments):
+        for index, sentiment in tqdm(enumerate(sentiments)):
             tweet_document = self.database[f'{sentiment}_tweets']
             self.__insert_tweets(tweet_document, twitter_paths[index], sentiment)
             word_document = self.database[f'{sentiment}_words']
