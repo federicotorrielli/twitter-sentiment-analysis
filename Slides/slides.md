@@ -331,13 +331,13 @@ Alcuni dei metodi utilizzati per comunicare in maniera conveniente con mongo_db
 
 ---
 
-# dao_mysql_db: ER (1)
+# dao_mysql_db: Schema ER (1)
 
 <img src="http://evilscript.altervista.org/files/img/er2.png" class="h-100 rounded">
 
 ---
 
-# dao_mysql_db: ER (2)
+# dao_mysql_db: (2)
 
 <img src="http://evilscript.altervista.org/files/img/er1.png" class="h-100 rounded">
 
@@ -664,4 +664,3 @@ def calc_perc_sharedwords(shared_words, word_datasets):
   <img src="https://evilscript.altervista.org/files/img/trust_emoticon_plot.png" class="h-50 rounded">
   <img src="https://evilscript.altervista.org/files/img/trust_emoji_plot.png" class="h-50 rounded">
 </div>
-
