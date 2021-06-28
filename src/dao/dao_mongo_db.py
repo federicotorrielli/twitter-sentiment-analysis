@@ -142,6 +142,9 @@ class DaoMongoDB:
             if word in self.slang_definitions[s]:
                 return self.slang_definitions[s][word]
         return "NOTHING FOUND"
+    
+    def get_new_lexicon(self) -> dict:
+        return self.__get_collection_address("new_lexicon").find_one()
 
     def get_result(self, word: str) -> dict:
         results = self.__get_collection_address("results")
@@ -192,4 +195,4 @@ class DaoMongoDB:
 
 if __name__ == '__main__':
     dao = DaoMongoDB()
-    pprint.pprint(dao.get_sentiment_percentages())
+    pprint.pprint(dao.get_new_lexicon())
