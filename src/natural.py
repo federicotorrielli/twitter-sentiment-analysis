@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 from collections import Counter
-from pprint import pprint
+from tqdm import tqdm
 from timeit import default_timer as timer
 
 from emoji import UNICODE_EMOJI_ENGLISH
@@ -119,7 +119,7 @@ def process_dataset(tweets: dict, sentiment: str):
     stopset = create_stopword_list()
     if '_id' in tweets:
         tweets.pop('_id')
-    for tweet_id, phrase in tweets.items():
+    for tweet_id, phrase in tqdm(tweets.items()):
         processed_phrase = process_phrase(phrase, stopset)
         wordlist.append(processed_phrase)
         tweets_tokens[tweet_id] = processed_phrase  # used in relational db
@@ -171,7 +171,8 @@ def calc_perc_sharedwords(shared_words, word_datasets):
     returndict = {}
     index = 0
     sentiments = ["anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust"]
-    for wordlist in shared_words.values():
+    print("Calculating the shared-words...")
+    for wordlist in tqdm(shared_words.values()):
         n_shared_words = len(wordlist)
         n_twitter_words = len(word_datasets[index])
         print(f"Dataset: {index}, #Shared: {n_shared_words}, #Twitter: {n_twitter_words}, #Lex: {lex_words[index]}")
@@ -202,8 +203,7 @@ def create_word_final_result(dao):
 
     if "_id" in input_set:
         input_set.remove("_id")
-    for value in input_set:
-        print(f"Creating result for word: {value}")
+    for value in tqdm(input_set):
         count = dao.get_count(value)
         definition = dao.get_definition(value)
         if '[' in definition:
@@ -259,7 +259,7 @@ def create_new_lexicon(word_datasets):
     new_wordlist = []
     existent_words = get_sentiment_words()
 
-    for dataset in word_datasets:
+    for dataset in tqdm(word_datasets):
         for word in dataset.keys():
             if word not in existent_words:
                 new_wordlist.append(word)
@@ -303,7 +303,8 @@ def quickstart(dao: Dao):
     dao.build_sentiments(word_datasets, emoji_datasets, emoticons_datasets, hashtag_datasets)
     dao.add_tweets_tokens(tweets_tokens)  # used in relational db
 
-    if input("\n\tDo you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
+    if input(
+            "\n\tDo you want to create the definitions of the words? (this can take up to 2 hours) [y/N] ").lower() == "y":
         create_definitions(word_datasets, dao)  # toml files
     print("\n\tAdding word definitions...")
     if dao.is_mongodb():

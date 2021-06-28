@@ -1,7 +1,7 @@
 import glob
 
 from requests import get
-
+from tqdm import tqdm
 from src.file_manager import dump_toml, get_project_root, read_toml
 
 
@@ -23,7 +23,7 @@ def create_definitions(datasets: [], dao):
         slang_dict = {}
         definitions_dict = {}
 
-        for word, count in sentiment.items():
+        for word, count in tqdm(sentiment.items()):
             if not word == "true" and not word == "false" and not word == "_id" \
                     and "." not in word and "$" not in word:
                 definition = check_word_existence(word, standard_toml_files)
@@ -32,9 +32,7 @@ def create_definitions(datasets: [], dao):
                     if definition == "":
                         if count > 4 and len(word) > 2:
                             definition = get_dictionary_definition(word)
-                            print(f"Searching: {word}, used {count} times, definition: {definition[:35]}...")
                             if definition == "":
-                                print(f"{word} is probably a slang")
                                 definition = get_slang_definition(word)
                                 if definition != "":
                                     slang_dict[word] = definition
@@ -43,10 +41,8 @@ def create_definitions(datasets: [], dao):
                             else:
                                 definitions_dict[word] = definition
                     else:
-                        print(f"{word} was already in the files, adding it to slangs!")
                         slang_dict[word] = definition
                 elif not definition == "":
-                    print(f"{word} was already in the files, adding it to definitions!")
                     definitions_dict[word] = definition
 
         dump_toml(f"{get_project_root()}/Resources/definitions/standard_definitions_{dataset_name}.toml",
