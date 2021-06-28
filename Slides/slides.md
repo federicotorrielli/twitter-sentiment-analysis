@@ -144,12 +144,12 @@ def process_dataset(tweets: dict, sentiment: str):
 
 # Codice: Slang
 
-* **Input**: Una lista di dizionari di word
-* **Output**: Le definizioni delle word in input, passate al DAO.
-* **Spiegazione**: Per ogni parola viene cercata prima la sua definizione nel dizionario generale (DictionaryAPI).
-  Se questa non viene trovata, si considera la parola uno slang, e quindi viene rifatta una ricerca nell'Urban Dicitonary.
-  Se ancora non viene trovata, allora si tratta di un errore di scrittura oppure di un neologismo, e quindi viene ignorata.
-  Per velocizzare la ricerca sui dataset, le definizioni vengono salvate in un file locale ".toml" in modo da poter essere
+* **Input**: Una lista di dizionari di **word**
+* **Output**: Le **definizioni delle word** in input, passate al *DAO*.
+* **Spiegazione**: Per ogni parola viene cercata prima la sua definizione nel dizionario generale (**DictionaryAPI**).
+  Se questa non viene trovata, si considera la parola uno **slang**, e quindi viene rifatta una ricerca nell'**Urban Dicitonary**.
+  Se ancora non viene trovata, allora si tratta di un **errore di scrittura** oppure di un **neologismo**, e quindi viene *ignorata*.
+  Per velocizzare la ricerca sui dataset, le definizioni vengono salvate in un **file locale ".toml"** in modo da poter essere
   recuperate se per qualche motivazione l'esecuzione del programma non andasse a buon fine.
 
 ---
@@ -180,8 +180,8 @@ def get_slang_definition(word):
     return good_definition["definition"]
 ```
 Possiamo osservare come, essendo Urban Dictionary un dizionario di comunità, debba essere selezionata la
-"risorsa migliore" tra quelle esistenti, andando a selezionare solo quella con like > dislike e con
-like molto maggiori tra tutte le definizioni recuperate.
+"**risorsa migliore**" tra quelle esistenti, andando a selezionare solo quella con **like > dislike** e con
+**like molto maggiori tra tutte le definizioni** recuperate.
 
 ---
 
@@ -189,7 +189,7 @@ like molto maggiori tra tutte le definizioni recuperate.
 
 * **Input**: Il tipo di DB che si intende utilizzare
 * **Output**: Nessuno.
-* **Spiegazione**: Da questa classe vengono chiamati i metodi per entrambi i database in egual modo,
+* **Spiegazione**: Da questa classe vengono chiamati i **metodi per entrambi** i database in egual modo,
   comportandosi effettivamente come "sovraclasse" per dao_mongo e dao_mysql.
   
 ---
@@ -262,15 +262,15 @@ Alcuni dei metodi utilizzati per comunicare in maniera conveniente con mongo_db
 * **Elasticità** nella definizione di come una struttura deve essere utilizzata o creata
 * Non esiste affatto uno schema a cui bisogna "aderire fedelmente", tutti i dati sono BSON o **JSON**,
   convertiti a dizionari Python, nel nostro caso specifico
-* Buon supporto per linguaggi di programmazione ad alto livello, ad esempio Python, per le operazioni
+* Buon **supporto per linguaggi** di programmazione ad alto livello, ad esempio Python, per le operazioni
   fondamentali
 * Setup per la produzione facile
 * Utilizzo di **secondary index** (anche nested) per velocizzare una query di ricerca (vd. nostro utilizzo
   in results)
-* Scalabilità assoluta che si adatta facilmente a progetti in continua evoluzione
-* Aiuta nella scrittura di codice pulito, veloce e leggibile
+* **Scalabilità** assoluta che si adatta facilmente a progetti in continua evoluzione
+* Aiuta nella scrittura di **codice pulito**, veloce e leggibile
 * Velocità insuperabile di data deposit e retrieval
-* Facile da esplorare con le find()
+* **Facile da esplorare** con le find()
 
 ---
 
@@ -279,7 +279,7 @@ Alcuni dei metodi utilizzati per comunicare in maniera conveniente con mongo_db
 * Proprio il fatto di essere **schema-less** rende difficile la definizione di una **struttura generale** di come deve essere
   trattato il DB, come ogni oggetto deve essere richiesto ed inviato, e alle volte si crea del *disordine* quando
   non si riesce a dare una forma alla struttura generale dei dati
-* Ci si ritrova facilmente in situazioni di ridondanza di dati in diverse tabelle
+* Ci si ritrova facilmente in situazioni di **ridondanza di dati** in diverse tabelle
 * Alto **utilizzo di memoria**, soprattutto per quanto riguarda indici
 * Necessità di utilizzare alle volte dei **trucchetti** per far "entrare" delle strutture dati in JSON
 
@@ -346,7 +346,7 @@ Alcuni dei metodi utilizzati per comunicare in maniera conveniente con mongo_db
 # dao_mysql_db: Vantaggi nel progetto
 
 * Schema ordinato che tende a mantenersi nel tempo
-* I dati sono consistenti a priori
+* I dati sono **consistenti a priori**
 * Linguaggio **SQL** per interagire con il database: semplifica l'interazione con i dati utilizzando sfruttando una sintassi semplice
 * Flessibilità nel cambio di requisiti dell'applicazione: SQL facilita la modifiche delle interrogazioni sui dati 
 * L'operatore **JOIN** semplifica la realizzazione delle interrogazioni sui dati presenti su più tabelle sfruttando le chiavi
