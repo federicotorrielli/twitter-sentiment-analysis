@@ -32,7 +32,7 @@ layout: center
         * 🖳 dao_mongo_db: Persistenza per mongodb
         * 🖳 dao_mysql_db: Persistenza per mysql
     * 📎 datasets_manager: Interazione con i dati offline (Resources)
-    * 📁 file_manager: Interazione low-lever con i files (open, close, append...)
+    * 📁 file_manager: Interazione low-level con i files (open, close, append...)
     * 🌍 lexical_glob: Mantiene i nomi dei files offline utilizzati
     * 🌴 natural: Esegue il Natural Language Processing dei dataset
     * 👅 slang: Crea le definizioni per le word
@@ -96,9 +96,9 @@ layout: center
   per ogni emozione, direttamente al DAO
 * **Spiegazione**: per ogni dataset di tweet legato al sentimento andiamo a chiamare sotto-metodi per processare
   tweet-per-tweet e restituiamo quante volte quel token appare tra tutte le parole processate, pulendo
-  i token dalle stopwords fornite. I dizionari in output verranno utilizzati dal dao per costruire le
+  i token dalle **stopwords** fornite. I dizionari in output verranno utilizzati dal dao per costruire le
   tabelle/document *sentiment_type_count*. Nella stessa classe creiamo anche le **definizioni** delle parole
-  e i risultati finali che verranno poi trasferiti ai database rispettivi. Inoltre, creiamo le statistiche
+  e i risultati finali che verranno poi trasferiti ai database rispettivi. Inoltre, creiamo le **statistiche**
   di uso delle risorse lessicali.
   
 ---
@@ -276,11 +276,11 @@ Alcuni dei metodi utilizzati per comunicare in maniera conveniente con mongo_db
 
 # dao_mongo_db: Svantaggi nel progetto
 
-* Proprio il fatto di essere schema-less rende difficile la definizione di una **struttura generale** di come deve essere
+* Proprio il fatto di essere **schema-less** rende difficile la definizione di una **struttura generale** di come deve essere
   trattato il DB, come ogni oggetto deve essere richiesto ed inviato, e alle volte si crea del *disordine* quando
   non si riesce a dare una forma alla struttura generale dei dati
 * Ci si ritrova facilmente in situazioni di ridondanza di dati in diverse tabelle
-* Utilizzo di memoria esagerato, soprattutto per quanto riguarda indici
+* Alto **utilizzo di memoria**, soprattutto per quanto riguarda indici
 * Necessità di utilizzare alle volte dei **trucchetti** per far "entrare" delle strutture dati in JSON
 
 ---
@@ -373,7 +373,7 @@ Alcuni dei metodi utilizzati per comunicare in maniera conveniente con mongo_db
   in **59 secondi** su una connessione 5MBps in download e 3MBps in upload e **30 secondi circa** su localhost.
 * MySQL completa l'intero processo (Build, Natural Language Processing, Creazione new lexicon, Creazione results, Wordclouds)
   in **1 ora circa** (**262 secondi** su localhost).
-* MySQL, a fine elaborazione dei file di progetto, ha un'occupazione in memoria di **406MB** circa
+* MySQL, a fine elaborazione dei file di progetto, ha un'occupazione in memoria di **70MB** circa
 
 ---
 layout: two-cols
@@ -385,15 +385,13 @@ layout: two-cols
 
 * NoSQL
 
-* Schemaless
+* Schema-less
 
 * Organizzazione dei dati flessibile
 
 * Interazione con i dati veloce
 
 * All'aumentare dei dati, si mantengono le prestazioni
-
-* Poco flessibile al variare delle interrogazioni
 
 * Strutture dati vicine al codice
 
@@ -414,8 +412,6 @@ layout: two-cols
 * Interazione con i dati più lento
 
 * All'aumentare dei dati, le prestazioni peggiorano
-
-* Flessibile al variare delle interrogazioni (SQL)
 
 * Impedance mismatch
 
@@ -668,3 +664,4 @@ def calc_perc_sharedwords(shared_words, word_datasets):
   <img src="https://evilscript.altervista.org/files/img/trust_emoticon_plot.png" class="h-50 rounded">
   <img src="https://evilscript.altervista.org/files/img/trust_emoji_plot.png" class="h-50 rounded">
 </div>
+
